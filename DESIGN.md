@@ -47,7 +47,7 @@ optional hook读取配置state，不写、不把游标变权限。稳定一行�
 ## 深度与边界
 build/test/reference覆盖Java Python Go JS/TS和Electron，但不能保证替代所有语言专家能力。桌面分renderer/IPC/主进程/OS/安装升级签名，浏览器无法全覆盖。
 安全、性能与发布验收按授权环境；缺框架/目标OS/CI权限要报告，不凭工具名字制造通过。
-不依赖specific general-purpose代理名；宿主无并行时串行降级。CodeGraph仅在项目已索引且项目约定适用时使用。
+不依赖specific general-purpose代理名；review/audit/research的只读分析可并行，须固定同一快照、隔离写入、主流程复核汇总；宿主无并行入口时串行降级。build/debug/browser等共享写入或环境的场景默认串行。CodeGraph仅在项目已索引且项目约定适用时使用。
 
 ## 支持与验证口径
 Claude/Codex/Qoder调用元数据分别验证。openai.yaml只说明Codex策略，user-invocable不是禁止隐式调用，Qoder未知能力不作结论。

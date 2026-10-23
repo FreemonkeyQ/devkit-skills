@@ -199,6 +199,15 @@ class SkillContractTests(unittest.TestCase):
             self.assertIn(word,records['dv-push'][1])
         for word in ['未提交','暂存','未跟踪']:
             self.assertIn(word,records['dv-review'][1])
+    def test_parallel_contracts(self):
+        records={fm['name']:(fm,body) for _,fm,body in catalog()}
+        for name in ('dv-review','dv-audit','dv-research'):
+            body=records[name][1]
+            for word in ('并行执行','串行','不伪称已分发'):
+                self.assertIn(word,body)
+        self.assertIn('只读',records['dv-review'][1])
+        self.assertIn('独立临时副本',records['dv-audit'][1])
+        self.assertIn('一手证据',records['dv-research'][1])
     def test_evaluation_fixtures(self):
         cases=json.loads((ROOT/'evals/scenarios.json').read_text())['cases']
         self.assertEqual(len(cases),9)
