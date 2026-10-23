@@ -1,10 +1,19 @@
 {
   "name": "devkit-skills",
-  "version": "0.1.0",
-  "description": "研发全流程 agent skills：16 个技能，4 个可自动触发，其余必须显式调用。",
-  "author": { "name": "devkit" },
+  "version": "0.2.0",
+  "description": "18个研发技能：自然语言选择，提交推送独立授权，CI跟踪优先已有发布链路。",
+  "author": {
+    "name": "devkit"
+  },
   "license": "MIT",
-  "repository": "https://github.com/<you>/devkit-skills",
-  "keywords": ["skills", "workflow", "tdd", "code-review", "spec-driven", "debugging", "testing"],
+  "keywords": [
+    "skills",
+    "workflow",
+    "tdd",
+    "code-review",
+    "spec-driven",
+    "debugging",
+    "testing"
+  ],
   "skills": "./skills/"
 }

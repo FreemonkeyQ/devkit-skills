@@ -1,5 +1,5 @@
 interface:
-  display_name: "dv-grill"
-  short_description: "拷问式需求对齐并落盘"
+  display_name: dv-grill
+  short_description: 澄清需求与记录决定
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

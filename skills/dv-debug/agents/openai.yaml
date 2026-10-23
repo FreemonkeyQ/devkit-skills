@@ -1,0 +1,5 @@
+interface:
+  display_name: dv-debug
+  short_description: 基于证据诊断修复
+policy:
+  allow_implicit_invocation: true

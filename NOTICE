@@ -1,43 +1,8 @@
-# NOTICE
+# 来源与许可证说明
 
-devkit-skills 的思想与部分文本改编自以下项目。各项目均以 MIT 许可证发布，原文版权归其各自作者所有。
+本仓库为中文重写的工程流程建议，自身MIT许可证见LICENSE。
+借鉴思想：Matt Pocock (https://github.com/mattpocock/skills) 的可组合技能、需求/任务/深模块与评审；obra/superpowers (https://github.com/obra/superpowers) 的验证纪律与反馈环；Anthropic (https://github.com/anthropics/skills) 的skill创作、前端与Web测试实践；Emil Kowalski (https://github.com/emilkowalski/skills) 的motion与设计工程；AgentForge (https://github.com/Lixiuxiu559/AgentForge) 的规则可追溯与审计职责。
 
-## mattpocock/skills
-
-- 来源：https://github.com/mattpocock/skills
-- 许可证：MIT
-- 采用内容与思想：需求拷问到规格再到工单的链路骨架；spec / ticket 的段落结构；双轴代码评审（Standards + Spec）的分离原则；深模块与接缝的设计词汇；`disable-model-invocation` 的用户调用 / 模型调用二分法。
-- 改动：全部重写为中文，合并为更少的技能，产物路径改为 `.devkit/`，并加入 `next` / `edits-code` 元数据。
-
-## obra/superpowers
-
-- 来源：https://github.com/obra/superpowers
-- 许可证：MIT
-- 采用内容与思想：TDD 三条铁律（没有失败测试前不写生产代码）；系统化调试中「先建立紧凑反馈环」的核心纪律；完成前必须先取得新鲜证据的门禁思想；反合理化清单的形式。
-- 不采用：强制自动调用（1% 规则）、SessionStart 全量注入。
-- 改动：铁律与纪律被压缩进 `dv-build` / `dv-debug` / `dv-done`，不再作为独立强制流程。
-
-## anthropics/skills
-
-- 来源：https://github.com/anthropics/skills
-- 许可证：见各技能目录内的 LICENSE.txt（多数为 MIT 或专有许可）
-- 采用内容与思想：frontend-design 的审美与约束表达方式；webapp-testing 的「先侦察再行动」模式；skill-creator 的评估与迭代流程（用于 `dv-author`）。
-- 改动：仅采用思想与结构，未复制文件。
-
-## emilkowalski/skills
-
-- 来源：https://github.com/emilkowalski/skills
-- 许可证：MIT
-- 采用内容与思想：`break-ui` 的极端数据清单（超长名称、空列表、超大数字等）；动效决策的四问顺序；原型多版本对比的做法。
-- 改动：并入 `dv-design` 与 `dv-browser`，去掉纯前端动画库相关内容。
-
-## Lixiuxiu559/AgentForge
-
-- 来源：https://github.com/Lixiuxiu559/AgentForge
-- 许可证：MIT
-- 采用内容与思想：测试用例设计「从业务规则推导、不从实现反推」的原则；突变测试与复杂度审计「只报告、不改代码」的边界；三轴 diff 评审中 Correctness / Standards / Spec 的独立报告形式。
-- 改动：合并 `test-design` 与测试执行为 `dv-test` 的双模式；合并 mutation 与 complexity 为 `dv-audit`。
-
-## 通用说明
-
-上述项目均以 MIT 或兼容许可证发布。本仓库对原文的引用均经过重写，未逐字复制大段文本。若原项目作者认为某处引用不当，请提交 issue，我们会在下一次发布中修正或移除。
+此版本不打包vendor文件，也不声称上游整个仓库均MIT。特别是Anthropic不同目录许可证可能不同，未来复制任何文件/实质文本必须核对应路径、版本、原版权和分发条件，保留必要NOTICE/LICENSE。不能以“改写了”自动免除衍生文本义务。
+参考模块是原创判断清单与工具示例，非原文摘录，不声称工具已安装、该项目完全兼容或上游认可本仓库。
+公开发布前需对具体采用内容做来源/许可复核；当前仍为原型，不作全量许可证审计通过声明。

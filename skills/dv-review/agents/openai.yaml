@@ -1,0 +1,5 @@
+interface:
+  display_name: dv-review
+  short_description: 三轴评审含未提交改动
+policy:
+  allow_implicit_invocation: true

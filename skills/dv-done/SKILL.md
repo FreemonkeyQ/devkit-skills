@@ -1,85 +1,30 @@
 ---
 name: dv-done
-description: 交付前的收口：用新鲜证据确认完成，更新状态，提交、开合并请求、清理工作树。用于改完了要交、要提交、要开MR、要结束当前工单。Triggers: 提交, 收尾, 交付, 开MR, commit, PR, finish.
-disable-model-invocation: true
+description: 验证任务完成程度、汇报证据与缺口；可做只读发布验收，不自动commit、push或清理工作树。
 user-invocable: true
 metadata:
   stage: ship
-  reads: [.devkit/state.json, .devkit/issues, .devkit/config.json]
-  writes: [.devkit/STATUS.md, .devkit/state.json, 提交, MR]
-  edits-code: true
-  next: []
+  summary: 验证汇报与可选发布验收
+  effects:
+  - docs
+  explicit-actions: []
+  next:
+  - dv-commit
+  - dv-push
 ---
 
-# 收口
-
-门禁 + 状态 + 提交，三件事一起做。**没有证据不许说完成。**
+# 验证与完成汇报
 
 ## 适用 / 不适用
+判断任务完成程度、汇报验证、发布验收。提交交commit、推送交push；“做完了吗”只授权检查汇报，不授权Git或部署操作。
 
-适用：工单做完要交；要提交；要开 MR；要结束工作树。
-
-不适用：还没审过 → `/dv-review`；测试没过 → `/dv-test run`；要修 bug → `/dv-debug`。
-
-## 流程
-
-### 1. 门禁（不可跳过）
-
-逐项给出**新鲜证据**——现跑的命令、完整输出、退出码：
-
-| 检查 | 命令来源 |
-|---|---|
-| 全量测试 | `config.commands.test` |
-| 静态检查 | `config.commands.lint` |
-| 类型检查 | `config.commands.typecheck` |
-| 审美/前端验收（若涉及界面） | `dv-browser` 已产出的探针结论 |
-
-任一项失败 → 停止，输出失败命令与原因，**不允许**标记完成。
-
-禁止用语（未验证前）：应该可以 / 大概率好了 / 我觉得没问题 / 完成了。
-
-### 2. 状态
-
-- `STATUS.md`：追加本次工单编号、改动摘要、验证结果
-- `state.json`：`stage=idle`、`next=[]`、清 `ticket`
-
-> **⏸ STOP**：输出提交计划（文件清单 + 提交信息），问「确认提交吗？」，等回答。
-
-### 3. 提交
-
-```bash
-git add <本次工单可追溯的文件>
-git commit -m "<type>(<scope>): <subject>"
-```
-
-- 只含当前工单的文件；混入无关改动要拆
-- 不提交密钥、`.env`、构建产物、依赖目录
-- 不自动 push，除非用户明确要求
-
-### 4. 合并请求（可选）
-
-用户要求时：用 `config.tracker.command` 或 `glab mr create` / `gh pr create`。标题与提交一致，正文含：改了什么 / 怎么验证 / 风险与回滚。
-
-### 5. 工作树清理（仅当本次用了独立工作树）
-
-- 先确认已合入或用户决定保留
-- 确认工作树内无未处理改动
-- 用 git worktree 机制移除，不 `rm -rf`
-- 不删除开发分支（需用户另行要求）
+## 模式与流程
+1. 默认任务收口：逐条对照用户验收要求与实际改动，复用仍对应当前版本/环境/测试范围的证据，证据失效才重跑。
+2. 运行项目现有且适用的检查，记录命令、退出码、关键结果，完整日志按需留位置。不存在typecheck不算失败，也不伪造通过；基线失败和本次失败区分。
+3. UI按browser记录；桌面、迁移、安全/性能按风险选择，不将自动化绿等同所有业务验收。
+4. `release` 发布验收：读取 references/release-verification.md，区分push、CI构建、部署执行、目标环境实际版本、健康与关键业务路径。只查用户授权环境，不自行部署/审批。
+5. 汇报完成/部分完成/阻塞及未验证项；按项目规则更新状态。verified表示代码验证完成，不表示已提交/推送/上线；待Git操作保留ticket与pending信息，用户明确结束任务才completed。
+6. commit/push仅作为可选下一步，不自动调用；worktree保留，不默认合并、删除或关闭服务。
 
 ## 自检
-
-- [ ] 每条门禁都贴了命令 + 输出 + 退出码
-- [ ] 提交清单里没有无关文件
-- [ ] `STATUS.md` 与 `state.json` 已更新
-- [ ] 没有自动 push
-- [ ] 若用了工作树，已确认可清理再清理
-
-## 反合理化
-
-| 我本来想说 | 现实 |
-|---|---|
-| 「测试刚才跑过，还是绿的」 | 改完代码后没跑过就是没证据 |
-| 「这几个文件一起提交方便」 | 无关改动混入，回滚时无法拆 |
-| 「先 push 再说，反正能改」 | 推送是用户的决定 |
-| 「工作树先删了，分支还在」 | 未合并就删工作树会丢内容 |
+不宣称完整输出等于执行成功；未测就明确未测。新鲜证据指匹配当前版本，不是无意义重复全套测试。缺口不能被“CI绿了”覆盖。

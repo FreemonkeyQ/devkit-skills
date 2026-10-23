@@ -1,0 +1,5 @@
+interface:
+  display_name: dv-route
+  short_description: 按目标选择最短研发路径
+policy:
+  allow_implicit_invocation: true

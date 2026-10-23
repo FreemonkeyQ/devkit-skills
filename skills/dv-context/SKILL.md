@@ -1,77 +1,29 @@
 ---
 name: dv-context
-description: 把 devkit 接入一个仓库：生成配置、补 AGENTS.md 技能段、建状态文件，并核对既有目录约定。用于新仓首次接入、状态与配置不一致、SKILL 没按预期工作。Triggers: 接入, 初始化devkit, 配置devkit, setup, onboard, 状态不一致.
-disable-model-invocation: true
+description: '把 devkit 接入一个仓库：生成配置、补 AGENTS.md 技能段、建状态文件，并核对既有目录约定。用于新仓首次接入、状态与配置不一致、SKILL
+  没按预期工作。Triggers: 接入, 初始化devkit, 配置devkit, setup, onboard, 状态不一致.'
 user-invocable: true
 metadata:
   stage: meta
-  reads: [AGENTS.md, CLAUDE.md, .devkit/config.json, .devkit/state.json, git remote]
-  writes: [.devkit/config.json, AGENTS.md, .devkit/STATUS.md, .devkit/state.json]
-  edits-code: false
+  summary: 接入配置与路径核对
+  effects:
+  - docs
+  explicit-actions: []
   next: []
 ---
 
-# 接入与配置
-
-一次性动作。之后只在配置或状态漂移时重跑。
+# 仓库接入与配置核对
 
 ## 适用 / 不适用
-
-适用：新仓库首次用 devkit；要改产物路径；`STATUS.md` 与 `state.json` 不一致；技能没按预期触发。
-
-不适用：要改技能本身 → `/dv-author`；不知道下一步 → `/dv-route`。
+首次接入、路径/命令/状态漂移；不为普通开发强制初始化。不明下一步用route，修改技能自身用author。
 
 ## 流程
-
-### 1. 探查（先看再问）
-
-读：`git remote -v` / `AGENTS.md` / `CLAUDE.md` / 是否存在 `.ai/` `docs/specs/` `specs/` / 包管理器与脚本 / 现有测试目录与运行方式 / 是否有工作树目录约定。
-
-### 2. 逐节确认（一节一问，先给推荐）
-
-**A. 产物路径**
-> 仓库里已经有 `.ai/specs`、`.ai/issues`，建议直接指过去，不新建 `.devkit/specs`。确认吗？
-
-选项：沿用已有目录（推荐） / 用 `.devkit/` / 其他路径。
-
-**B. 命令**
-从脚本里推断 `test` / `testUnit` / `lint` / `typecheck` / `dev`，逐条让用户确认。推断不出来就问。
-
-**C. Git 习惯**
-分支前缀、工作树目录、是否允许自动提交（默认否）。
-
-**D. 语言**
-技能正文与产物语言（默认中文）。仅影响新生成文档。
-
-### 3. 写入
-
-- `.devkit/config.json`（按 `.devkit/config.schema.json`）
-- `AGENTS.md`：只在没有「## 技能」段时追加，已有则只更新该段，不动其他内容
-- `.devkit/STATUS.md`（或配置指定路径）：骨架 + 当前状态
-- `.devkit/state.json`：`stage: idle`
-
-### 4. 验证
-
-- `python3 scripts/lint.py`（若在 devkit 仓库内）
-- 打印配置摘要与产物路径，让用户看一遍
-
-## 硬约束
-
-- 绝不覆盖已有的 `AGENTS.md` 正文，只增删自己的段
-- 不创建与已有目录并存的第二套
-- 不修改项目代码
+1. 读取AGENTS/CLAUDE及目录级规则、现有spec/issues/词汇/ADR、脚本和真实测试入口、remote与分支习惯。事实自己查，只问无法判断且影响选择的决定。
+2. 沿用既有产物目录与编号；没有则默认.devkit。配置始终在项目.devkit/config.json，路径值相对项目根；commands是明确命令，不凭安装依赖推定能运行。
+3. 普通写文档按用户接入授权执行；新增重要流程规则展示摘要。AGENTS只维护标记包围的devkit段，不覆盖其他正文/目录级指令。
+4. 参考共享scripts/config.py与config.schema.json输出配置，记录可用/不可用检查。没有自动提交开关：commit/push由当次意图授权，不由静态配置提升权限。
+5. 状态可选；新建时idle，已有状态不能重置丢任务。用户指令/Git/实测优先于游标，冲突报告修正建议而非盲信JSON。
+6. 输出实际变动、路径与命令依据，不安装全局技能、不挂hook或修改用户设置，除非另行明确要求。
 
 ## 自检
-
-- [ ] 四节都问过，没有替用户决定
-- [ ] 路径指向已存在目录时，确认过不是空目录冲突
-- [ ] `AGENTS.md` 只增了自己的段
-- [ ] 配置能通过 schema 校验
-
-## 反合理化
-
-| 我本来想说 | 现实 |
-|---|---|
-| 「默认用 .devkit 就行，不用问」 | 项目已有约定时会造成两套目录 |
-| 「AGENTS.md 我重写一版更整齐」 | 那里面可能有用户的规则 |
-| 「命令我猜一个，错了再改」 | 猜错会让后续验证全假 |
+路径未越出仓库或复写外部symlink；无秘密写入配置；schema校验不执行命令。缺框架不静默新增框架；已有记录保留。

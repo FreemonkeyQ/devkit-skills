@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "devkit recovery hint v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "stage",
+    "next"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "stage": {
+      "enum": [
+        "idle",
+        "discussing",
+        "planning",
+        "building",
+        "reviewing",
+        "verified",
+        "awaiting-commit",
+        "committed",
+        "pushed",
+        "completed",
+        "blocked"
+      ]
+    },
+    "next": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^dv-[a-z0-9-]+$"
+      },
+      "uniqueItems": true
+    },
+    "ticket": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "branch": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "head": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updatedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pending": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

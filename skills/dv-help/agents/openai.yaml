@@ -1,5 +1,5 @@
 interface:
-  display_name: "dv-help"
-  short_description: "技能手册与用法查询"
+  display_name: dv-help
+  short_description: 查询技能和推荐用法
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

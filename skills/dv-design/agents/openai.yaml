@@ -1,5 +1,5 @@
 interface:
-  display_name: "dv-design"
-  short_description: "页面结构状态与动效决策"
+  display_name: dv-design
+  short_description: 界面视觉交互设计
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

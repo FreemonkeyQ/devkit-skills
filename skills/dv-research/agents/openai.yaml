@@ -1,0 +1,5 @@
+interface:
+  display_name: dv-research
+  short_description: 一手证据调研
+policy:
+  allow_implicit_invocation: true

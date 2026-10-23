@@ -1,0 +1,5 @@
+interface:
+  display_name: dv-commit
+  short_description: 按功能规范本地提交
+policy:
+  allow_implicit_invocation: true

@@ -1,5 +1,5 @@
 interface:
-  display_name: "dv-author"
-  short_description: "新建或修改技能本身"
+  display_name: dv-author
+  short_description: 维护技能与评估质量
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

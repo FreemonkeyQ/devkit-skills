@@ -1,65 +1,32 @@
 ---
 name: dv-build
-description: 按工单实现代码，内含红绿重构循环与小步验证，结束时自动转入评审。用于有工单要落地、要按计划写代码、要修一个已定位的缺陷。Triggers: 开始实现, 按工单开发, 写代码, 实现这个, implement, build.
-disable-model-invocation: true
+description: 在明确授权范围实现功能或已定位修复，按风险测试评审，不自动提交推送。用于开始实施、按方案开发或明确小改动。
 user-invocable: true
 metadata:
   stage: build
-  reads: [.devkit/issues, .devkit/specs, CONTEXT.md, .devkit/config.json]
-  writes: [代码, 测试, .devkit/state.json, .devkit/STATUS.md]
-  edits-code: true
-  next: [dv-review]
+  summary: 授权范围内实施
+  effects:
+  - docs
+  - tests
+  - business-code
+  explicit-actions: []
+  next:
+  - dv-review
+  - dv-done
 ---
 
-# 实现
-
-只做当前工单。**不顺手改别处，不自动提交。**
+# 在授权范围内实现
 
 ## 适用 / 不适用
-
-适用：工单已就绪要落地；单点修复已定位；按 spec 分阶段推进。
-
-不适用：需求还没定 → `/dv-grill`；原因还没找到 → `/dv-debug`；只是想设计用例 → `/dv-test design`。
-
-## 输入
-
-- 当前工单（`.devkit/issues/NNN-*.md`）或用户口述的一段明确改动
-- `.devkit/config.json` 里的 `commands`（test / lint / typecheck）
-- 相关 ADR 与 `CONTEXT.md`
+明确要求实现、修改、修复已定位问题时使用；允许口述明确任务，无spec/工单也可开展。只分析不实施；未定位具体异常交debug。
 
 ## 流程
+1. 读取仓库指令、目标依据、相关实现和已有测试；记录基线与既有脏文件，保留无关改动。已索引仓库按其CodeGraph约定定位代码。
+2. 选与行为对应的测试边界；业务逻辑/Bug优先失败测试→最小实现→绿→重构。配置、文档、样式、原型、迁移选择合适验证，说明理由，不强行生成无价值测试。
+3. 复用版本、结构、框架和环境，最小范围修改，不自创新架构或安装未知工具。语言/桌面实施参考 references/implementation.md。
+4. 每步跑相关验证；完成时按风险跑相关套件、lint/typecheck等适用检查。不存在的入口记缺口，不执行空命令或伪造通过。
+5. 评审包含本次未提交/暂存/新文件；修正真实问题后重验。不因diff不足10行跳过权限/安全/业务检查。
+6. 根据项目规则记录进度与证据，状态可选，不初始化第二套任务系统。最后调用或建议review/done；调用结果如实汇报。
 
-1. **确认接缝**。找出这次要测试的最高已有接缝；新建接缝必须提出理由。接缝清晰写进工单的「测试决策」。
-2. **红绿循环**（每个行为一次）：
-   - 写一个会失败的测试，**先运行并看到它红**
-   - 写最小实现让它绿
-   - 重构，测试保持绿
-3. **小步验证**：每完成一个行为，跑对应单测；不要攒到最后。
-4. **全量一次**：工单完成时跑 `commands.test` + `lint` + `typecheck`。
-5. **更新状态**：`state.json` 的 `stage=verify`、`next=/dv-review`；`STATUS.md` 追加一行。
-6. **交接**：`下一步固定是 /dv-review`。若 diff <10 行且只改文案/样式，可说「可直接 /dv-done」。
-
-## 硬约束
-
-- **不自动 commit，不自动 push**（除非 config 里显式 `autoCommit: true`）
-- 不修改工单范围外的文件
-- 不新增未被要求的抽象或配置项
-- 测试失败不允许用 skip / 注释掉 / 放宽断言绕过
-
-## 自检
-
-- [ ] 每个新行为都有一个先红过的测试
-- [ ] 全量测试、lint、typecheck 均通过，附命令与退出码
-- [ ] diff 只涉及当前工单的可追溯改动
-- [ ] 未提交任何密钥、`.env`、构建产物
-- [ ] 已更新 `state.json` 与 `STATUS.md`
-
-## 反合理化
-
-| 我本来想说 | 现实 |
-|---|---|
-| 「先写实现，测试回头补」 | 没看到红的测试，就不知道它测的是不是对的 |
-| 「这个小改动不用跑全量」 | 至少跑 lint + 相关单测，全量在工单收尾时跑 |
-| 「顺手把这个重复代码也重构了」 | 记录成新工单，不在本次范围 |
-| 「测试挂了但和这次改动无关」 | 先确认基线是否本来就红，写在报告里，不静默忽略 |
-| 「改完直接提交吧」 | 提交是 `/dv-done` 的职责，且需用户确认 |
+## 授权与自检
+只实现当前目标；不自动commit/push/merge/deploy。既有用户改动不得删除重写；测试失败不得靠skip或削弱断言隐藏。按需参考桌面IPC、安装升级、线程与资源边界，浏览器通过不代表桌面完整验收。

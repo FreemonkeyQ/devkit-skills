@@ -1,5 +1,5 @@
 interface:
-  display_name: "dv-build"
-  short_description: "按工单实现并走红绿循环"
+  display_name: dv-build
+  short_description: 授权范围内实施
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

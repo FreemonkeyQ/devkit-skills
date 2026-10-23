@@ -1,77 +1,129 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "devkit config",
+  "title": "devkit configuration v1",
   "type": "object",
+  "required": [
+    "version"
+  ],
   "additionalProperties": false,
   "properties": {
-    "version": { "type": "integer", "const": 1 },
+    "version": {
+      "const": 1
+    },
     "language": {
-      "type": "string",
-      "description": "技能正文与产物的默认语言",
-      "enum": ["zh-CN", "en"],
-      "default": "zh-CN"
+      "enum": [
+        "zh-CN",
+        "en"
+      ]
     },
     "paths": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "specs": { "type": "string", "default": ".devkit/specs" },
-        "issues": { "type": "string", "default": ".devkit/issues" },
-        "status": { "type": "string", "default": ".devkit/STATUS.md" },
-        "state": { "type": "string", "default": ".devkit/state.json" },
-        "handoff": { "type": "string", "default": ".devkit/handoff" },
-        "context": { "type": "string", "default": "CONTEXT.md" },
-        "adr": { "type": "string", "default": "docs/adr" }
+        "specs": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issues": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "type": "string",
+          "minLength": 1
+        },
+        "handoff": {
+          "type": "string",
+          "minLength": 1
+        },
+        "context": {
+          "type": "string",
+          "minLength": 1
+        },
+        "adr": {
+          "type": "string",
+          "minLength": 1
+        },
+        "research": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviews": {
+          "type": "string",
+          "minLength": 1
+        },
+        "audits": {
+          "type": "string",
+          "minLength": 1
+        },
+        "design": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "commands": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
       }
     },
     "tracker": {
       "type": "object",
       "additionalProperties": false,
-      "description": "可选：接入真实 issue tracker。缺省为本地文件。",
       "properties": {
-        "kind": { "type": "string", "enum": ["local", "gitlab", "github"], "default": "local" },
-        "command": { "type": "string", "description": "创建工单的命令模板，例如 glab issue create" }
-      }
-    },
-    "commands": {
-      "type": "object",
-      "description": "项目级验证命令，技能只引用不发明",
-      "additionalProperties": { "type": "string" },
-      "properties": {
-        "install": { "type": "string" },
-        "test": { "type": "string" },
-        "testUnit": { "type": "string" },
-        "testE2E": { "type": "string" },
-        "lint": { "type": "string" },
-        "typecheck": { "type": "string" },
-        "dev": { "type": "string" }
+        "kind": {
+          "enum": [
+            "local",
+            "gitlab",
+            "github"
+          ]
+        }
       }
     },
     "frontend": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "devUrl": { "type": "string", "description": "浏览器验收的默认入口，如 http://127.0.0.1:5173" }
+        "devUrl": {
+          "type": "string"
+        }
       }
     },
     "git": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "branchPrefix": { "type": "string", "default": "feat/" },
-        "worktreeDir": { "type": "string", "description": "相对主仓同级目录，如 <repo>-worktrees" },
-        "autoCommit": { "type": "boolean", "default": false },
-        "autoPush": { "type": "boolean", "default": false }
+        "branchPrefix": {
+          "type": "string"
+        }
       }
     },
-    "review": {
+    "ci": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "axes": {
-          "type": "array",
-          "items": { "type": "string", "enum": ["correctness", "standards", "spec"] },
-          "default": ["correctness", "standards", "spec"]
+        "provider": {
+          "enum": [
+            "auto",
+            "gitlab",
+            "github",
+            "none"
+          ]
+        },
+        "waitSeconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3600
+        },
+        "pollSeconds": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 600
         }
       }
     }

@@ -1,12 +1,19 @@
 {
   "name": "devkit-skills",
   "displayName": "devkit 研发流程",
-  "description": "研发全流程 agent skills：16 个技能，4 个可自动触发，其余必须显式调用。",
-  "descriptionZh": "研发全流程 agent skills：16 个技能，4 个可自动触发，其余必须显式调用。",
-  "version": "0.1.0",
-  "author": { "name": "devkit" },
+  "description": "18个研发技能：自然语言选择，提交推送独立授权，CI跟踪优先已有发布链路。",
+  "descriptionZh": "18个研发技能：自然语言选择，提交推送独立授权，CI跟踪优先已有发布链路。",
+  "version": "0.2.0",
+  "author": {
+    "name": "devkit"
+  },
   "license": "MIT",
-  "keywords": ["skills", "workflow", "tdd", "review"],
+  "keywords": [
+    "skills",
+    "workflow",
+    "tdd",
+    "review"
+  ],
   "category": "development",
   "skills": "./skills/"
 }

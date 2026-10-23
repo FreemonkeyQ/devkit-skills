@@ -1,5 +1,5 @@
 interface:
-  display_name: "dv-context"
-  short_description: "接入仓库与生成配置"
+  display_name: dv-context
+  short_description: 接入配置与路径核对
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

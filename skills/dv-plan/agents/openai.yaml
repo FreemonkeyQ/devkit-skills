@@ -1,5 +1,5 @@
 interface:
-  display_name: "dv-plan"
-  short_description: "定稿规格并拆垂直切片工单"
+  display_name: dv-plan
+  short_description: 方案定稿与任务拆解
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

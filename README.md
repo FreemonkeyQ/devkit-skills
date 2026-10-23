@@ -1,149 +1,77 @@
 # devkit-skills
 
-> 一套面向研发全流程的 agent skills。16 个技能，你只需要记住 3 个。
+GitHub：[FreemonkeyQ/devkit-skills](https://github.com/FreemonkeyQ/devkit-skills)
 
-[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![skills](https://img.shields.io/badge/skills-16-green.svg)](skills/)
+```bash
+git clone git@github.com:FreemonkeyQ/devkit-skills.git
+```
 
-devkit 不是又一个「接管流程」的框架。它假设**流程已经在你脑子里或仓库里**，只把每一步该做什么、该产出什么、下一步交给谁，写成 agent 能执行的动作。
+面向个人与开源协作的研发技能库，统一 `dv-` 命名，与公司无关。**18 个技能，直接说任务即可；调用技能不等于授权提交、推送或部署。**
 
-它和 superpowers / BMAD / spec-kit 的区别只有一条：**devkit 不强制任何一步。** 12 个技能默认只有你能触发，模型自己只能碰 4 个（查资料、调 bug、审 diff、问路由）。
+状态：**v0.2.0 原型**。流程契约与离线测试可验证；宿主实际调用、真实项目交付与跨平台部署不宣称已全面验证。
 
----
+## 推荐用法
 
-## 为什么需要它
-
-现有 skill 包的两个通病，devkit 是照着这两条设计的：
-
-| 通病 | 症状 | devkit 的对策 |
+| 你说 | 推荐路径 | 边界 |
 |---|---|---|
-| **流程绑架** | 「1% 可能相关就必须调用」，每轮都被方法论压着 | 只有 4 个 model-invoked，其余必须你打 |
-| **装而不用** | 装 100+ skill，常驻几万 token，实际用 3 个 | 16 个，description 合计约 1.6k token |
+| 想加导出，但字段没想清 | grill → plan（必要时） | 只澄清不自动开工 |
+| 按已确认方案实现 | build → review → done | 不自动commit/push |
+| 报错，先分析别改 | debug诊断 | 不修源码 |
+| 设计这页的交互 | design → build（批准后） | 先设计与原型 |
+| 帮我审这次改动 | review | 包含未提交/暂存/相关新文件 |
+| 按功能规范提交，不push | commit | 合理分批，仅本地提交 |
+| 推送一下 / commit push | commit（若相关改动未提交）→ push | 保护无关改动，CI后果先识别 |
+| 只推已有提交，不commit | push | 工作区保持原状 |
+| 推完等部署结果 | push＋CI跟踪 | 不自动审批/重试/部署 |
+| 验证发布后的功能 | done release | 实际版本＋健康＋关键业务，默认只读 |
+| 这套怎么用 | help | 查询总表、场景和技能说明 |
 
----
+没有必要为了一个小改动制造spec、issue、ADR。现有仓库规范优先；自然语言可以明确只分析、记录、执行或限制范围。
 
-## 安装
+## 全部技能
 
-```bash
-git clone https://github.com/<you>/devkit-skills.git ~/devkit-skills
-cd ~/devkit-skills
-./scripts/link.sh --apply      # 链接到 Claude Code / Qoder CN / Codex
+元：dv-route、dv-help、dv-context、dv-author。
+需求/设计：dv-grill、dv-research、dv-plan、dv-design、dv-arch。
+实施：dv-build、dv-debug。
+测试/验收：dv-test、dv-audit、dv-browser、dv-review。
+交付：dv-done、**dv-commit、dv-push**。
+
+完整生成表见 [dv-help](skills/dv-help/references/_generated.md)。next仅表示可选关联，不是强制执行序列。
+
+## 使用与安装（尚未替换你的现有技能）
+
+Claude Code本地试用可使用 `claude --plugin-dir /path/to/devkit-skills`，插件命名空间通常为 `/devkit-skills:dv-help`；裸skills链接时通常 `/dv-help`。以宿主实际列表为准。
+
+可选本地链接工具（只处理Claude/Qoder skills目录）：
 ```
-
-首次进入项目时：
-
+python3 scripts/link.py --check
+python3 scripts/link.py --apply
+python3 scripts/link.py --uninstall
 ```
-/dv-context
-```
+apply会创建目标目录，但不覆盖任何外来文件/符号链接；有冲突返回非零。不要同时插件安装和裸链接，以免重复。
+Codex附带agents/openai.yaml是Codex元数据；Qoder与Cursor支持需要分别实测，不把该字段当Qoder权限保险。此版本未提供Cursor规则生成或Codex自动安装。
 
-它会扫描仓库，写 `.devkit/config.json`、给 `AGENTS.md` 补技能段、建状态文件。
+所有技能按自然语言可发现。显式动作（commit/push）必须有当次明确意图；宿主权限机制仍优先，metadata只描述职责不是沙箱。
 
----
+## 配置与恢复
 
-## 16 个技能
+`.devkit/config.json`可从示例复制，推荐dv-context读取现有仓库约定后接入。路径相对项目根，禁止越界。命令只填真实入口，无对应工具则保留未验证项。
+状态可选；`state.json`只提示会话恢复，不覆盖当前指令、Git和实测证据。
+可选hook `scripts/dv-hook.sh`不会自动注册，需宿主单独授权；它不执行技能、不写状态或自动部署。
 
-### 入口（只记这 3 个）
-
-| 技能 | 什么时候用 |
-|---|---|
-| `/dv-grill` | 说不清要做什么、方案没底、要跟人对齐 |
-| `/dv-plan` | 说清了，要变成 spec 和可执行工单 |
-| `/dv-build` | 有工单了，开始写代码 |
-
-### 模型自己会来（不用记）
-
-| 技能 | 触发 |
-|---|---|
-| `dv-debug` | 报错、失败测试、变慢、偶发失败 |
-| `dv-research` | 要查资料、比方案、核实版本差异 |
-| `dv-review` | 有 diff 要审、提交前、开 MR 前 |
-| `dv-route` | 你不知道下一步做什么 |
-
-### 收口
-
-| 技能 | 作用 |
-|---|---|
-| `/dv-done` | 门禁 + 更新状态 + 提交 + 开 MR + 清理 worktree |
-
-### 季节型（想不起来就问 `/dv-route`）
-
-| 技能 | 作用 |
-|---|---|
-| `/dv-design` | 页面结构、状态、异常态、动效 |
-| `/dv-arch` | 模块边界、深模块、安全迁移 |
-| `/dv-test` | `design` 设计用例 / `run` 写跑测试 |
-| `/dv-audit` | 突变测试、复杂度、测试有效性（只报告） |
-| `/dv-browser` | 真实浏览器验收、极端数据、性能 |
-| `/dv-context` | 新仓接入、配置与状态对齐 |
-| `/dv-author` | 维护 devkit 本身、淘汰闲置技能 |
-| `/dv-help` | 手册：全部技能 / 单条用法 / 主流程 / 排错 |
-
-忘了全部也没关系：**`/dv-help`**。
-
----
-
-## 主流程
+## 开发验证
 
 ```
-dv-grill ──► dv-plan ──► dv-build ──► dv-review ──► dv-done
-   ▲            │            ▲            │
-   │            └─(tickets)──┘            └─(小改)──► dv-done
-   │
-dv-research · dv-arch(shape)        dv-design · dv-arch(migrate) · dv-test(design)
-                     │                              │
-                     └──────────► dv-build ◄────────┘
-
-on-ramp   dv-debug ──► dv-done      dv-browser ──► dv-done      dv-audit ──► dv-build
-元        dv-route · dv-context · dv-author · dv-help
+python3 -m pip install -r requirements-dev.txt
+python3 scripts/lint.py
+python3 scripts/dv-help-gen.py
+python3 scripts/dv-help-gen.py --check
+python3 -m unittest discover -s tests -v
+python3 scripts/cost.py
 ```
+开发工具需要PyYAML/jsonschema；阅读技能本身不需安装依赖。成本只报字符预算，非精确token或上界。
 
----
+## 文档
+[设计](DESIGN.md) · [产物](ARTIFACTS.md) · [使用指南](skills/dv-help/references/guide.md) · [评估](docs/evaluation.md) · [来源](NOTICE)
 
-## 自动触发的三层
-
-| 层 | 谁触发 | 机制 | 技能 |
-|---|---|---|---|
-| L0 只读自动 | 模型 | description 触发词 | debug / research / review / route |
-| L1 状态提示 | hook | `UserPromptSubmit` 注入一行当前阶段 | 全部 |
-| L2 仪式 | **你** | `disable-model-invocation` + `user-invocable` + `agents/openai.yaml` | 其余 12 个 |
-
-L1 的注入长这样，每轮约 30 token：
-
-```
-[devkit] stage=build ticket=007 next=/dv-review
-```
-
----
-
-## 命名与产物
-
-- 全部技能前缀 `dv-`，目录与 `name` 字段必须一致
-- 产物默认写 `.devkit/`，可在 `.devkit/config.json` 里改成 `.ai/` 等你已有的约定
-- 不写死任何公司或团队流程；团队约定通过 config 注入
-
-产物协议见 [ARTIFACTS.md](ARTIFACTS.md)，完整设计见 [DESIGN.md](DESIGN.md)。
-
----
-
-## 开发与校验
-
-```bash
-python3 scripts/lint.py            # 12 条结构校验
-python3 scripts/dv-help-gen.py     # 重新生成 dv-help 的总表
-python3 scripts/cost.py            # 打印常驻 token
-./scripts/link.sh --check          # 检查各 harness 链接是否漂移
-```
-
-CI 会跑 lint 与 `dv-help-gen --check`，防止总表与技能定义漂移。
-
----
-
-## License
-
-MIT。改编自以下项目的思想，逐条署名见 [NOTICE](NOTICE)：
-
-- [mattpocock/skills](https://github.com/mattpocock/skills)
-- [obra/superpowers](https://github.com/obra/superpowers)
-- [anthropics/skills](https://github.com/anthropics/skills)
-- [emilkowalski/skills](https://github.com/emilkowalski/skills)
-- [Lixiuxiu559/AgentForge](https://github.com/Lixiuxiu559/AgentForge)
+原创建议与重写技能，MIT；吸收Matt Pocock、Anthropic、Emil、Superpowers和AgentForge的工程思想，不声称逐字移植或已全量替代语言专项库。见NOTICE。

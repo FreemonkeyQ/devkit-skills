@@ -1,5 +1,5 @@
 interface:
-  display_name: "dv-test"
-  short_description: "设计用例或写跑测试"
+  display_name: dv-test
+  short_description: 业务用例与测试执行
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

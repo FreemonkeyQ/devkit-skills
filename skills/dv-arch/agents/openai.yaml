@@ -1,5 +1,5 @@
 interface:
-  display_name: "dv-arch"
-  short_description: "模块边界设计与安全迁移"
+  display_name: dv-arch
+  short_description: 架构与兼容迁移方案
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

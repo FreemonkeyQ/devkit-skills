@@ -1,10 +1,10 @@
 {
+  "version": 1,
   "stage": "idle",
+  "next": [],
   "ticket": null,
-  "blocked_by": [],
-  "next": null,
-  "since": null,
-  "session": null,
   "branch": null,
-  "worktree": null
+  "head": null,
+  "updatedAt": null,
+  "pending": []
 }

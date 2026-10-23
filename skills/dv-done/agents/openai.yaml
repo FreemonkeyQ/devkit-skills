@@ -1,5 +1,5 @@
 interface:
-  display_name: "dv-done"
-  short_description: "门禁状态提交与收尾"
+  display_name: dv-done
+  short_description: 验证汇报与可选发布验收
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

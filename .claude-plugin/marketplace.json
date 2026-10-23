@@ -1,20 +1,32 @@
 {
   "name": "devkit-skills",
-  "owner": { "name": "devkit" },
+  "owner": {
+    "name": "devkit"
+  },
   "metadata": {
-    "description": "研发全流程 agent skills：16 个技能，4 个可自动触发，其余必须显式调用。",
-    "version": "0.1.0"
+    "description": "18个研发流程技能与授权边界",
+    "version": "0.2.0"
   },
   "plugins": [
     {
       "name": "devkit-skills",
       "source": "./",
-      "description": "16 skills covering requirement alignment, planning, design, architecture, implementation, debugging, testing, audit, browser verification, review and delivery.",
-      "version": "0.1.0",
-      "author": { "name": "devkit" },
+      "description": "18 engineering skills, explicit commit/push intent, CI tracking and release verification.",
+      "version": "0.2.0",
+      "author": {
+        "name": "devkit"
+      },
       "license": "MIT",
-      "keywords": ["skills", "claude-code", "workflow", "tdd", "code-review", "spec-driven"],
+      "keywords": [
+        "skills",
+        "claude-code",
+        "workflow",
+        "tdd",
+        "code-review",
+        "spec-driven"
+      ],
       "skills": "./skills/"
     }
-  ]
+  ],
+  "version": "0.2.0"
 }

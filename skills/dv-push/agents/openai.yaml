@@ -1,0 +1,5 @@
+interface:
+  display_name: dv-push
+  short_description: 提交后推送与CI跟踪
+policy:
+  allow_implicit_invocation: true
