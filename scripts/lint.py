@@ -161,6 +161,42 @@ def check() -> None:
             if other not in body:
                 errors.append(f"[12] {name}: 缺少指向 {other} 的互斥句")
 
+    # 13 dv-help 首屏里的数字与名单必须与实际一致
+    help_md = SKILLS / "dv-help" / "SKILL.md"
+    if help_md.exists():
+        body = help_md.read_text(encoding="utf-8")
+        total = len(names)
+        for m in re.finditer(r"(\d+)\s*个技能", body):
+            if int(m.group(1)) != total:
+                errors.append(
+                    f"[13] dv-help: 首屏写「{m.group(1)} 个技能」，实际 {total} 个"
+                )
+        l0_m = re.search(r"自己会来（([^）]*)）", body)
+        if l0_m:
+            listed = {x.strip() for x in l0_m.group(1).split("/") if x.strip()}
+            expect = {n.replace("dv-", "") for n in L0}
+            if listed != expect:
+                errors.append(
+                    f"[13] dv-help: 自动触发名单 {sorted(listed)} 与 L0 {sorted(expect)} 不一致"
+                )
+        for m in re.finditer(r"其余\s*(\d+)\s*个", body):
+            rest = int(m.group(1))
+            if rest != total - 3:
+                errors.append(
+                    f"[13] dv-help: 写「其余 {rest} 个」，应为总数 {total} − 入口 3 = {total - 3}"
+                )
+            seasonal = re.search(r"(\d+)\s*个季节型", body)
+            if seasonal:
+                s = int(seasonal.group(1))
+                if rest != len(listed) + s:
+                    errors.append(
+                        f"[13] dv-help: 其余 {rest} ≠ 自动 {len(listed)} + 季节 {s}"
+                    )
+                if s != total - 3 - len(L0):
+                    errors.append(
+                        f"[13] dv-help: 季节型写 {s} 个，应为 {total - 3 - len(L0)} 个"
+                    )
+
 
 def main() -> int:
     check()
