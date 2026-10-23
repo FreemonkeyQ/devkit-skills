@@ -42,6 +42,7 @@ next为建议图而非执行状态机；cycles合法，目标必须存在。
 help生成检查不写入；lint校验YAML类型、字段、引用、调用策略对齐。文字预算超限仅warning，静态检查不证明实际行为。
 link仅Claude/Qoder本地目录，不覆盖外来链接；check无写入、卸载仅自有。
 optional hook读取配置state，不写、不把游标变权限。稳定一行提示，无时长与循环计数；没有实现“3轮/10轮”稀疏策略，不承诺它。
+文档契约分三档`docs.profile`：off只留目录，light校验命名/编号/状态词/引用/索引，strict再加必填小节。模板随技能安装进各自references，不再放仓库根。check-docs只报告不改写，索引由脚本生成，两者都不构成写入授权。
 
 ## 深度与边界
 build/test/reference覆盖Java Python Go JS/TS和Electron，但不能保证替代所有语言专家能力。桌面分renderer/IPC/主进程/OS/安装升级签名，浏览器无法全覆盖。

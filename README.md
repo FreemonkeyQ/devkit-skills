@@ -149,6 +149,15 @@ python3 scripts/link.py --uninstall               # 方式三
 
 `.devkit/config.json` 可从示例复制，推荐 dv-context 读取现有仓库约定后接入。路径相对项目根，禁止越界。命令只填真实入口，无对应工具则保留未验证项。
 
+产物命名与目录契约见 [ARTIFACTS.md](ARTIFACTS.md)：`docs.profile` 三档（`off`/`light`/`strict`），缺省 `light`。模板随技能安装（在各自 `references/`），不依赖本仓库根目录。
+
+```bash
+python3 scripts/check-docs.py --project <项目根>        # 只读校验，非零退出=有错
+python3 scripts/gen-docs-index.py --project <项目根>    # 生成 docs/INDEX.md
+```
+
+未启用 `strict` 时只校验文件名、编号、状态词、引用与索引，不校验必填小节；不得宣称“格式已强制”。
+
 状态可选；`state.json` 只提示会话恢复，不覆盖当前指令、Git 和实测证据。
 
 可选 hook `scripts/dv-hook.sh` 不会自动注册，需宿主单独授权；它不执行技能、不写状态或自动部署。
@@ -161,6 +170,7 @@ python3 scripts/lint.py
 python3 scripts/dv-help-gen.py
 python3 scripts/dv-help-gen.py --check
 python3 -m unittest discover -s tests -v
+python3 scripts/check-docs.py --project . --json
 python3 scripts/cost.py
 claude plugin validate .          # 校验 plugin.json 与 marketplace.json
 claude --plugin-dir .             # 从仓库根直接试用当前改动
