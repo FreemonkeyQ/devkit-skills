@@ -27,7 +27,7 @@ qoderclicn --config-dir ~/.qoder-cn plugins marketplace update devkit-skills
 qoderclicn --config-dir ~/.qoder-cn plugins update devkit-skills@devkit-skills --scope user
 ```
 
-缺失 CLI 时报告手工命令，不自动安装。市场未配置时先报告，不擅自新增市场。
+缺失 CLI 时报告手工命令，不自动安装。市场未配置时先报告，不擅自新增市场。`--check`只读本地市场克隆，不联网刷新；`--apply`总是先刷新市场，再决定是否需要`plugin update`。
 
 ## 同版本行为（2026-10-23 实测）
 

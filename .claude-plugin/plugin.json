@@ -1,6 +1,6 @@
 {
   "name": "devkit-skills",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "19个研发技能：自然语言选择，提交推送独立授权，CI跟踪与本机跨宿主升级。",
   "author": {
     "name": "devkit"

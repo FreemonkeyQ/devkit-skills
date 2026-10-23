@@ -66,6 +66,19 @@ class UpgradeTests(unittest.TestCase):
         self.assertEqual((target / 'skills/dv-review/SKILL.md').read_text(), 'old')
         self.assertEqual(upgrade.tree_digest(source), result['source_digest'])
 
+    def test_apply_refreshes_marketplace_before_deciding(self):
+        root = self.root / 'claude'
+        self.make_plugin(root / 'plugins/marketplaces/devkit-skills', content='same')
+        self.make_install(root, content='same')
+        log = self.root / 'cli.log'
+        cli = self.fake_cli(log)
+        env = {'CLAUDE_CONFIG_DIR': str(root), 'CLAUDE_CLI': str(cli)}
+        with unittest.mock.patch.dict(os.environ, env, clear=False):
+            result = upgrade.upgrade_host('claude', True, True, 5)
+        self.assertEqual(result['status'], 'up_to_date')
+        self.assertEqual(len(result['steps']), 1)
+        self.assertIn('plugin marketplace update', log.read_text())
+
     def test_same_version_sync_fallback(self):
         root = self.root / 'claude'
         self.make_plugin(root / 'plugins/marketplaces/devkit-skills', content='new')

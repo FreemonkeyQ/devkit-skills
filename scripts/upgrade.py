@@ -309,29 +309,32 @@ def upgrade_host(host, apply, sync, timeout):
             result['status'] = 'install_missing'
         elif not source.is_dir():
             result['status'] = 'marketplace_missing'
+        elif apply and not result['cli']:
+            result['status'] = 'cli_missing'
         else:
-            installed_version = record.get('version') or version_at(installed, host)
-            source_version = result.get('source_version')
-            result['installed_version'] = installed_version
-            source_digest = tree_digest(source)
-            installed_digest = tree_digest(installed)
-            result['source_digest'] = source_digest
-            result['installed_digest'] = installed_digest
-            relation = (compare_versions(source_version, installed_version)
-                        if source_version and installed_version else 0)
-            if relation < 0:
-                result['status'] = 'downgrade_blocked'
-            elif source_digest == installed_digest:
-                result['status'] = 'up_to_date'
-            elif not apply:
-                result['status'] = 'update_available' if relation > 0 else 'sync_needed'
-            elif not result['cli']:
-                result['status'] = 'cli_missing'
-            else:
+            if apply:
                 step = marketplace_update(host, root, result['cli'], timeout)
                 result['steps'].append(step)
                 if step['code'] != 0:
                     result['status'] = 'marketplace_update_failed'
+            if result['status'] == 'unknown':
+                source_version = version_at(source, host)
+                result['source_version'] = source_version
+                result['source_sha'] = git_head(source, timeout)
+                installed_version = record.get('version') or version_at(installed, host)
+                result['installed_version'] = installed_version
+                source_digest = tree_digest(source)
+                installed_digest = tree_digest(installed)
+                result['source_digest'] = source_digest
+                result['installed_digest'] = installed_digest
+                relation = (compare_versions(source_version, installed_version)
+                            if source_version and installed_version else 0)
+                if relation < 0:
+                    result['status'] = 'downgrade_blocked'
+                elif source_digest == installed_digest:
+                    result['status'] = 'up_to_date'
+                elif not apply:
+                    result['status'] = 'update_available' if relation > 0 else 'sync_needed'
                 else:
                     step = plugin_update(host, root, result['cli'], timeout)
                     result['steps'].append(step)
