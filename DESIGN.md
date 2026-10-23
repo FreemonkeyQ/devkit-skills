@@ -263,3 +263,42 @@ MIT 兼容；逐条署名见 [NOTICE](NOTICE)。
 | `dv-plan` 合并 spec/tickets 可能丢审批粒度 | spec 未确认就拆工单 | 正文两个显式 `STOP` 标记 + 自检清单 |
 | 16 个仍需自养 | 模型换代后要重验 | 正文薄、知识进 references、上游只 vendor 不 fork |
 | 开源后外部用户无 `.ai/` | 首次体验割裂 | `dv-context` 首次运行必问；默认 `.devkit/` |
+
+---
+
+## 11. 验证记录（v0.1.0 实测）
+
+以下为提交时的真实执行结果，不是设计意图。
+
+| # | 验证项 | 命令 | 结果 |
+|--:|---|---|---|
+| 1 | 结构校验 | `python3 scripts/lint.py` | 0 errors / 0 warnings / 16 skills |
+| 2 | 总表防漂移 | `python3 scripts/dv-help-gen.py --check` | OK 总表一致 |
+| 3 | 常驻成本 | `python3 scripts/cost.py` | 705 tok（仅描述）/ 1839 tok（完整 frontmatter） |
+| 4 | 插件清单 | `claude plugin validate .` | ✔ Validation passed（marketplace + plugin 两份） |
+| 5 | 技能加载 | `claude -p ... --plugin-dir .` | 16 个全部加载 |
+| 6 | L0 隔离 | 同上，问「能自动看到哪些 dv- 技能」 | 仅 `dv-debug, dv-research, dv-review, dv-route` |
+| 7 | L2 不可自动调用 | 问 `dv-ship / dv-plan 存在吗` | `no` —— 手动技能不进入自动可达集合 |
+| 8 | 路由触发 | 输入「我接下来该干什么？」 | 命中 `dv-route` |
+| 9 | 调试触发 | 输入「TypeError… 只在生产偶发」 | 命中 `dv-debug` |
+| 10 | hook 注入 | `UserPromptSubmit` + `dv-hook.sh` | 模型复述出 `[devkit] stage=build ticket=007 next=/dv-review (39m前)` |
+| 11 | hook 静默 | `state.stage=idle` | 无输出，exit 0 |
+| 12 | 规则 13 有效性 | 故意把「其余 13 个」改成 12 | lint 报 2 条 ERROR，改回后恢复 0 |
+| 13 | 正文长度 | `wc -l skills/*/SKILL.md` | 最长 92 行，全部 ≤120 |
+| 14 | 名称一致性 | 目录名 vs frontmatter `name` | 16/16 一致 |
+
+### 已验证的结论
+
+- **三键齐发有效**：Claude Code 侧按 `disable-model-invocation` 正确隔离了 12 个 L2 技能（验证 6、7）。
+- **L1 状态层可行**：hook 注入的文本确实进入了模型上下文（验证 10），不是只写不读。
+- **防漂移生效**：`dv-help` 首屏的数字与名单由 lint 强校验（验证 12），手改必红。
+
+### 未验证 / 待验证
+
+| 项 | 状态 | 影响 |
+|---|---|---|
+| Qoder CN 是否支持 `disable-model-invocation` | 已知不支持，靠 `user-invocable` + `openai.yaml` 兜底 | 未在 Qoder 实机跑过 16 个技能的触发边界 |
+| Qoder CN 的 hook stdout 是否注入上下文 | **未验证** | 若不通，Qoder 侧 L1 降级为纯交接段 |
+| Codex 侧加载 | 未实测 | 目录结构符合其约定，但未跑 |
+| 真实任务端到端（场景 A–E） | 未跑 | 需在真实仓库跑一遍再定 v0.2 |
+| 淘汰机制 | 未实施 | 取决于是否有使用统计数据 |
