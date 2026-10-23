@@ -66,6 +66,12 @@ class UpgradeTests(unittest.TestCase):
         self.assertEqual((target / 'skills/dv-review/SKILL.md').read_text(), 'old')
         self.assertEqual(upgrade.tree_digest(source), result['source_digest'])
 
+    def test_claude_env_only_overrides_custom_root(self):
+        with unittest.mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop('CLAUDE_CONFIG_DIR', None)
+            self.assertNotIn('CLAUDE_CONFIG_DIR', upgrade.claude_env(Path.home() / '.claude'))
+            self.assertEqual(upgrade.claude_env(self.root)['CLAUDE_CONFIG_DIR'], str(self.root))
+
     def test_apply_refreshes_marketplace_before_deciding(self):
         root = self.root / 'claude'
         self.make_plugin(root / 'plugins/marketplaces/devkit-skills', content='same')

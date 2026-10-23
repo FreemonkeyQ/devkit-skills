@@ -149,17 +149,24 @@ def link_records(root):
     return records
 
 
+def claude_env(root):
+    env = dict(os.environ)
+    if Path(root).resolve() != (Path.home() / '.claude').resolve():
+        env['CLAUDE_CONFIG_DIR'] = str(root)
+    return env
+
+
 def marketplace_update(host, root, cli, timeout):
     if host == 'claude':
-        env = dict(os.environ, CLAUDE_CONFIG_DIR=str(root))
-        return run([cli, 'plugin', 'marketplace', 'update', MARKET], timeout, env)
+        return run([cli, 'plugin', 'marketplace', 'update', MARKET],
+                   timeout, claude_env(root))
     return run([cli, '--config-dir', str(root), 'plugins', 'marketplace', 'update', MARKET], timeout)
 
 
 def plugin_update(host, root, cli, timeout):
     if host == 'claude':
-        env = dict(os.environ, CLAUDE_CONFIG_DIR=str(root))
-        return run([cli, 'plugin', 'update', PLUGIN_ID, '--scope', 'user', '-y'], timeout, env)
+        return run([cli, 'plugin', 'update', PLUGIN_ID, '--scope', 'user', '-y'],
+                   timeout, claude_env(root))
     return run([cli, '--config-dir', str(root), 'plugins', 'update', PLUGIN_ID,
                 '--scope', 'user'], timeout)
 

@@ -3,7 +3,7 @@
   "displayName": "devkit 研发流程",
   "description": "19个研发技能：自然语言选择，提交推送独立授权，CI跟踪与本机跨宿主升级。",
   "descriptionZh": "19个研发技能：自然语言选择，提交推送独立授权，CI跟踪与本机跨宿主升级。",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": {
     "name": "devkit"
   },

@@ -1,4 +1,4 @@
-# devkit-skills v0.3.1 设计
+# devkit-skills v0.3.2 设计
 
 ## 目标
 统一dv-命名、个人开源、覆盖研发全程。技能选择交给模型，重要决定与副作用授权留给用户。不是强制流水线，不为满足阶段数量而制造文档。当前19个技能，不新增dv-deploy。
@@ -16,6 +16,7 @@
 - 新增dv-upgrade：同时升级Claude Code与Qoder CN中的devkit插件或裸链接；官方命令后校验内容摘要。
 - 同版本Claude拒绝更新时备份后原子同步；install只指本机安装，不授权commit/push或发布。
 - 0.3.1修复apply模式未先刷新市场、导致看不到新发布版本的问题；check仍保持只读本地克隆。
+- 0.3.2修复默认Claude根被强制写入CLAUDE_CONFIG_DIR、导致CLI去读错误配置路径的问题。
 
 ## 技能分工
 | 类别 | 技能 | 主要职责 |
