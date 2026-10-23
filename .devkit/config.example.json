@@ -5,7 +5,12 @@
     "specs": ".devkit/specs",
     "issues": ".devkit/issues",
     "status": ".devkit/STATUS.md",
-    "state": ".devkit/state.json"
+    "state": ".devkit/state.json",
+    "changes": "docs/changes",
+    "index": "docs/INDEX.md"
+  },
+  "docs": {
+    "profile": "light"
   },
   "tracker": {
     "kind": "local"

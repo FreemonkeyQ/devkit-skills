@@ -9,7 +9,9 @@ ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_PATHS = {'specs':'.devkit/specs','issues':'.devkit/issues','status':'.devkit/STATUS.md',
                  'state':'.devkit/state.json','handoff':'.devkit/handoff','context':'CONTEXT.md',
                  'adr':'docs/adr','research':'docs/research','reviews':'docs/reviews',
-                 'audits':'docs/audits','design':'docs/design'}
+                 'audits':'docs/audits','design':'docs/design','changes':'docs/changes',
+                 'index':'docs/INDEX.md'}
+DEFAULT_DOCS = {'profile':'light'}
 
 
 def resolve_path(project, value):
@@ -29,6 +31,7 @@ def load_config(project):
     jsonschema.validate(cfg,schema)
     result = copy.deepcopy(cfg)
     result['paths'] = {**DEFAULT_PATHS, **cfg.get('paths',{})}
+    result['docs'] = {**DEFAULT_DOCS, **cfg.get('docs',{})}
     for value in result['paths'].values(): resolve_path(project,value)
     return result
 

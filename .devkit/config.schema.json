@@ -63,6 +63,27 @@
         "design": {
           "type": "string",
           "minLength": 1
+        },
+        "changes": {
+          "type": "string",
+          "minLength": 1
+        },
+        "index": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "docs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "enum": [
+            "off",
+            "light",
+            "strict"
+          ]
         }
       }
     },

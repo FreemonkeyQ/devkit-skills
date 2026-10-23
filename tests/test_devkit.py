@@ -22,6 +22,8 @@ def module(name,file):
 
 helpgen=module('helpgen','dv-help-gen.py')
 hook=module('hook','dv-hook.py')
+docscheck=module('docscheck','check-docs.py')
+indexgen=module('indexgen','gen-docs-index.py')
 
 
 class MetadataTests(unittest.TestCase):
@@ -120,6 +122,71 @@ class GitFixtureTests(unittest.TestCase):
             result=subprocess.run(['git','-C',t,'rev-parse','--abbrev-ref','@{upstream}'],capture_output=True)
             self.assertNotEqual(result.returncode,0)
             self.assertEqual((p/'unrelated').read_text(),'preserve\n')
+
+
+class DocContractTests(unittest.TestCase):
+    def project(self,t,profile='light'):
+        root=Path(t);(root/'.devkit').mkdir(parents=True)
+        cfg={'version':1,'docs':{'profile':profile}}
+        (root/'.devkit/config.json').write_text(json.dumps(cfg))
+        return root
+    def write(self,root,rel,text):
+        p=root/rel;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(text,encoding='utf-8');return p
+    def test_clean_project_passes(self):
+        with tempfile.TemporaryDirectory() as t:
+            root=self.project(t)
+            self.write(root,'.devkit/specs/001-user-auth.md','# 用户鉴权\n\n- 状态：草稿\n\n## 1. 背景与目标\n\nx\n')
+            self.write(root,'docs/adr/0001-use-jwt.md','# 0001. 选 JWT\n\n- 状态：采纳\n')
+            indexgen.main.__globals__['sys'].argv=['gen','--project',t]
+            self.assertEqual(indexgen.main(),0)
+            errors,warnings=docscheck.check(t)
+            self.assertEqual(errors,[])
+    def test_bad_name_duplicate_status_missing_section(self):
+        with tempfile.TemporaryDirectory() as t:
+            root=self.project(t,'strict')
+            self.write(root,'.devkit/specs/spec1.md','# x\n\n- 状态：草稿\n')
+            self.write(root,'.devkit/specs/001-a.md','# a\n\n- 状态：错误态\n\n## 1. 背景与目标\n')
+            self.write(root,'.devkit/specs/001-b.md','# b\n\n- 状态：定稿\n')
+            errors,_=docscheck.check(t)
+            self.assertTrue(any('C2' in e for e in errors))
+            self.assertTrue(any('C3' in e for e in errors))
+            self.assertTrue(any('C4' in e for e in errors))
+            self.assertTrue(any('C5' in e for e in errors))
+    def test_broken_reference_and_supersede(self):
+        with tempfile.TemporaryDirectory() as t:
+            root=self.project(t)
+            self.write(root,'docs/adr/0001-old.md','# 0001. 旧\n\n- 状态：被 0099 取代\n\n相关：`docs/specs/001-missing.md`\n')
+            errors,_=docscheck.check(t)
+            self.assertTrue(any('C6' in e for e in errors))
+            self.assertTrue(any('C7' in e for e in errors))
+    def test_index_required_and_stale(self):
+        with tempfile.TemporaryDirectory() as t:
+            root=self.project(t)
+            self.write(root,'.devkit/specs/001-a.md','# a\n\n- 状态：草稿\n')
+            errors,_=docscheck.check(t)
+            self.assertTrue(any('C8' in e and 'missing index' in e for e in errors))
+            self.write(root,'docs/INDEX.md','- [x](docs/specs/gone.md)\n')
+            errors,_=docscheck.check(t)
+            self.assertTrue(any('stale link' in e for e in errors))
+    def test_profile_off_only_reports(self):
+        with tempfile.TemporaryDirectory() as t:
+            root=self.project(t,'off')
+            self.write(root,'.devkit/specs/spec1.md','# x\n')
+            errors,warnings=docscheck.check(t)
+            self.assertEqual(errors,[])
+            self.assertTrue(any('off' in w for w in warnings))
+    def test_index_generation_idempotent(self):
+        with tempfile.TemporaryDirectory() as t:
+            root=self.project(t)
+            self.write(root,'.devkit/specs/001-a.md','# 标题A\n\n- 状态：定稿\n')
+            for _ in range(2):
+                indexgen.main.__globals__['sys'].argv=['gen','--project',t]
+                self.assertEqual(indexgen.main(),0)
+            first=(root/'docs/INDEX.md').read_text()
+            indexgen.main.__globals__['sys'].argv=['gen','--project',t,'--check']
+            self.assertEqual(indexgen.main(),0)
+            self.assertIn('[标题A]',first)
+            self.assertIn('定稿',first)
 
 
 class SkillContractTests(unittest.TestCase):
