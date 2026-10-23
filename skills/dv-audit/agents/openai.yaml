@@ -1,0 +1,5 @@
+interface:
+  display_name: "dv-audit"
+  short_description: "突变与复杂度只读体检"
+policy:
+  allow_implicit_invocation: false

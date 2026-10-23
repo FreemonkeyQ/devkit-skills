@@ -1,0 +1,5 @@
+interface:
+  display_name: "dv-done"
+  short_description: "门禁状态提交与收尾"
+policy:
+  allow_implicit_invocation: false

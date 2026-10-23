@@ -1,0 +1,10 @@
+{
+  "stage": "idle",
+  "ticket": null,
+  "blocked_by": [],
+  "next": null,
+  "since": null,
+  "session": null,
+  "branch": null,
+  "worktree": null
+}

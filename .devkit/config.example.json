@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "language": "zh-CN",
+  "paths": {
+    "specs": ".devkit/specs",
+    "issues": ".devkit/issues",
+    "status": ".devkit/STATUS.md",
+    "state": ".devkit/state.json",
+    "handoff": ".devkit/handoff",
+    "context": "CONTEXT.md",
+    "adr": "docs/adr"
+  },
+  "tracker": {
+    "kind": "local"
+  },
+  "commands": {
+    "test": "",
+    "testUnit": "",
+    "testE2E": "",
+    "lint": "",
+    "typecheck": "",
+    "dev": ""
+  },
+  "frontend": {
+    "devUrl": ""
+  },
+  "git": {
+    "branchPrefix": "feat/",
+    "worktreeDir": "",
+    "autoCommit": false,
+    "autoPush": false
+  },
+  "review": {
+    "axes": ["correctness", "standards", "spec"]
+  }
+}

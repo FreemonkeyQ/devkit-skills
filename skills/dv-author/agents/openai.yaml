@@ -1,0 +1,5 @@
+interface:
+  display_name: "dv-author"
+  short_description: "新建或修改技能本身"
+policy:
+  allow_implicit_invocation: false

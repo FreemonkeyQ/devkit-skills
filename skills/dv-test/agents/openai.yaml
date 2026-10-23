@@ -1,0 +1,5 @@
+interface:
+  display_name: "dv-test"
+  short_description: "设计用例或写跑测试"
+policy:
+  allow_implicit_invocation: false

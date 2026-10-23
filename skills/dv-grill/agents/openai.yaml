@@ -1,0 +1,5 @@
+interface:
+  display_name: "dv-grill"
+  short_description: "拷问式需求对齐并落盘"
+policy:
+  allow_implicit_invocation: false

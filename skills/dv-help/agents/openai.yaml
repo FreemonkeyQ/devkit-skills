@@ -1,0 +1,5 @@
+interface:
+  display_name: "dv-help"
+  short_description: "技能手册与用法查询"
+policy:
+  allow_implicit_invocation: false

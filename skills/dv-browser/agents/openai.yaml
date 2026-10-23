@@ -1,0 +1,5 @@
+interface:
+  display_name: "dv-browser"
+  short_description: "真实浏览器验收与极端数据"
+policy:
+  allow_implicit_invocation: false

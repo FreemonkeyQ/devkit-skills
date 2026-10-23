@@ -1,0 +1,5 @@
+interface:
+  display_name: "dv-plan"
+  short_description: "定稿规格并拆垂直切片工单"
+policy:
+  allow_implicit_invocation: false

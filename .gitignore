@@ -1,0 +1,19 @@
+node_modules/
+.env
+.env.*
+*.log
+.DS_Store
+
+# 本地运行状态，不入库
+.devkit/state.json
+.devkit/STATUS.md
+.devkit/specs/
+.devkit/issues/
+.devkit/handoff/
+
+# 保留模板与规范
+!.devkit/config.schema.json
+!.devkit/config.example.json
+!.devkit/state.example.json
+!.devkit/STATUS.template.md
+.DS_Store
