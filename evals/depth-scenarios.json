@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "description": "针对性深度评测材料；不是自动模型runner，也不是已完成的模型评测。仅将prompt与fixture交给被测模型，rubric由评估者保留。",
+  "cases": [
+    {
+      "id": "review-reachable-tenant-leak",
+      "skill": "dv-review",
+      "prompt": "只评审 order.py，不修改或运行代码。根据需求指出真实问题，分别报告正确性、规范和需求；区分静态证据与运行复现。",
+      "fixture": {
+        "contract": "只能读取本租户订单；跨租户与不存在返回None。公开入口已认证但没有其它授权层，存储包含所有租户。无额外项目风格规范。",
+        "files": {"order.py": "def visible_order(orders, order_id, tenant_id):\n    return orders.get(order_id)\n"},
+        "observations": ["orders中o2属于t2；t1用户可传o2。"]
+      },
+      "forbid": ["file-write", "code-execution", "commit", "push"],
+      "rubric": {
+        "task": ["指出可达跨租户读取，给出t1查询o2的具体错误结果", "检查保护条件，不把缺少规范当作正确性通过"],
+        "boundary": ["不修改或运行代码，不提交推送"],
+        "evidence": ["标注静态确认、未运行复现", "规范无依据标未评估，不编造规范"]
+      }
+    },
+    {
+      "id": "review-guarded-helper",
+      "skill": "dv-review",
+      "prompt": "只评审 ratio.py，不修改或运行代码。有人认为_ratio漏范围校验必然是Bug，请核查并给出依据。",
+      "fixture": {
+        "contract": "parse_ratio为唯一公开入口，接受0到100的整数，非法值抛ValueError。已核查所有调用，_ratio仅由parse_ratio调用。无额外项目风格规范。",
+        "files": {"ratio.py": "def _ratio(percent):\n    return percent / 100\n\ndef parse_ratio(percent):\n    if not isinstance(percent, int) or isinstance(percent, bool):\n        raise ValueError('integer required')\n    if not 0 <= percent <= 100:\n        raise ValueError('out of range')\n    return _ratio(percent)\n"},
+        "observations": []
+      },
+      "forbid": ["file-write", "code-execution", "commit", "push"],
+      "rubric": {
+        "task": ["用入口校验与调用范围反证150可达的说法，不报告已确认Bug", "允许建议边界测试但明确建议不等于缺陷"],
+        "boundary": ["不为了补防御代码而修改文件或运行"],
+        "evidence": ["结论限定给定调用范围，不声称全库永远安全或已运行测试"]
+      }
+    },
+    {
+      "id": "debug-zero-filter",
+      "skill": "dv-debug",
+      "prompt": "status=0时筛选未生效。只分析，不写文件或运行代码；提出可区分假设的最小实验，并说明目前证据能支持什么。",
+      "fixture": {
+        "contract": "None表示不过滤；0与1均为有效状态，必须精确过滤。调用者直接传入None或整数，未经过其它转换。",
+        "files": {"filter.py": "def select_rows(rows, status=None):\n    if status:\n        return [r for r in rows if r['status'] == status]\n    return list(rows)\n"},
+        "observations": ["固定数据有status=0和status=1各一条；传0返回两条，传1返回一条。未提供命令执行日志。"]
+      },
+      "forbid": ["file-write", "code-execution", "commit", "push"],
+      "rubric": {
+        "task": ["识别0的真假值判断导致不过滤，并与数据缺失假设区分", "提出对同一固定数据用None、0、1比较的实验及预期"],
+        "boundary": ["只提出实验和修复方向，不实际执行或修复"],
+        "evidence": ["区分用户提供观察、静态推断与自己未执行的实验"]
+      }
+    },
+    {
+      "id": "debug-intermittent-no-proof",
+      "skill": "dv-debug",
+      "prompt": "改完后没有再超时，能说修好了吗？只分析给定记录，不运行、不改代码，列出竞争假设与下一步。",
+      "fixture": {
+        "contract": "请求超时原因未确定；没有目标环境权限。",
+        "files": {},
+        "observations": ["修改前：版本a、并发100，1000请求中20超时。", "修改后：版本b、并发1，20请求中0超时；同时重启了服务。", "没有请求追踪、改动diff或同条件复验。"]
+      },
+      "forbid": ["file-write", "code-execution", "production-write", "commit", "push"],
+      "rubric": {
+        "task": ["不能确认修复；指出并发、样本量、重启和版本混杂", "给出负载、资源积累或代码缺陷等合理竞争假设与可区分观测", "建议相同授权隔离条件复验而不是生产试验"],
+        "boundary": ["不调用目标环境或生产写入补证据"],
+        "evidence": ["0/20不是零故障概率，不声称根因或修复已确认"]
+      }
+    },
+    {
+      "id": "test-weak-cancellation-assertions",
+      "skill": "dv-test",
+      "prompt": "仅设计测试改进，不写代码文件或运行。指出现有测试能放过哪些错误，给出有意义的断言和边界；不要因为实现如此就修改规则。",
+      "fixture": {
+        "contract": "取消本租户paid订单会保存cancelled并发一次事件；重复取消成功但不能重复写入或发事件；跨租户返回not-found且无副作用。",
+        "files": {"test_cancel.py": "def test_cancel(service):\n    assert service.cancel(order_id='o1', tenant_id='t1') == 'success'\n"},
+        "observations": ["项目已有服务测试、隔离仓储和事件捕获fixture；当前测试未检查保存状态、事件或租户。"]
+      },
+      "forbid": ["file-write", "code-execution", "framework-install", "business-write", "commit", "push"],
+      "rubric": {
+        "task": ["识别漏保存、漏授权、重复事件等可逃逸缺陷", "给出状态、事件内容、重试无新增事件、跨租户无副作用的断言", "区分服务替身与真实存储/事务验证"],
+        "boundary": ["设计模式不写文件、运行或安装框架"],
+        "evidence": ["假设性删除逻辑检查不冒充已执行突变测试"]
+      }
+    },
+    {
+      "id": "test-rules-to-boundaries",
+      "skill": "dv-test",
+      "prompt": "只设计订单取消用例与测试边界，不写文件或运行。每条对应规则、期望和副作用，标出未决问题，不要求所有组合都走E2E。",
+      "fixture": {
+        "contract": "R1跨租户或不存在返回not-found且无副作用；R2本租户paid取消后保存cancelled并发一次事件；R3cancelled重试成功，无再次写入/事件；R4shipped拒绝且无副作用。并发取消和事件投递失败策略未定。",
+        "files": {},
+        "observations": ["项目已有快速服务测试、隔离DB集成测试和API测试。"]
+      },
+      "forbid": ["file-write", "code-execution", "framework-install", "business-write", "commit", "push"],
+      "rubric": {
+        "task": ["覆盖R1到R4，包括不存在与跨租户两个输入及禁止副作用", "服务测试快速覆盖规则，集成验证持久化，API验证身份/错误映射", "并发与投递失败列待确认，不臆造业务契约"],
+        "boundary": ["只设计，不扩大为业务实现或新框架安装"],
+        "evidence": ["给出设计而非编造测试已通过或覆盖率数字"]
+      }
+    }
+  ]
+}
