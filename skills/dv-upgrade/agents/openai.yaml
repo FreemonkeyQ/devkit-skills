@@ -1,0 +1,5 @@
+interface:
+  display_name: dv-upgrade
+  short_description: 跨宿主升级本机 devkit
+policy:
+  allow_implicit_invocation: true

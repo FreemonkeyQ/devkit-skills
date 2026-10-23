@@ -3,9 +3,9 @@
 [![validate](https://github.com/FreemonkeyQ/devkit-skills/actions/workflows/lint.yml/badge.svg)](https://github.com/FreemonkeyQ/devkit-skills/actions/workflows/lint.yml)
 [MIT](LICENSE)
 
-面向个人与开源协作的研发技能库，统一 `dv-` 命名，与公司无关。**18 个技能，直接说任务即可；调用技能不等于授权提交、推送或部署。**
+面向个人与开源协作的研发技能库，统一 `dv-` 命名，与公司无关。**19 个技能，直接说任务即可；调用技能不等于授权提交、推送或部署。**
 
-状态：**v0.2.0 原型**。流程契约与离线测试可验证；宿主实际调用、真实项目交付与跨平台部署不宣称已全面验证。
+状态：**v0.3.0 原型**。流程契约与离线测试可验证；宿主实际调用、真实项目交付与跨平台部署不宣称已全面验证。
 
 ## 环境要求
 
@@ -76,7 +76,7 @@ python3 scripts/link.py --uninstall # 仅删除由本仓库创建的链接
 
 ```bash
 claude plugin list                       # 方式一：应看到 devkit-skills，Status: ✔ enabled
-claude plugin details devkit-skills      # 方式一：Skills (18) 且列出 dv-* 全部技能
+claude plugin details devkit-skills      # 方式一：Skills (19) 且列出 dv-* 全部技能
 ```
 
 会话内可打开 `/plugin` 的 **Installed** 标签确认，或输入 `/` 查看 `/devkit-skills:dv-*`。
@@ -101,11 +101,12 @@ claude plugin details devkit-skills      # 方式一：Skills (18) 且列出 dv-
 | 只推已有提交，不 commit | push | 工作区保持原状 |
 | 推完等部署结果 | push＋CI 跟踪 | 不自动审批/重试/部署 |
 | 验证发布后的功能 | done release | 实际版本＋健康＋关键业务，默认只读 |
+| 升级本机 Claude/Qoder 的 devkit | upgrade | 只动本机安装，不 commit/push |
 | 这套怎么用 | help | 查询总表、场景和技能说明 |
 
 全部技能：
 
-- 元：dv-route、dv-help、dv-context、dv-author
+- 元：dv-route、dv-help、dv-context、dv-author、dv-upgrade
 - 需求/设计：dv-grill、dv-research、dv-plan、dv-design、dv-arch
 - 实施：dv-build、dv-debug
 - 测试/验收：dv-test、dv-audit、dv-browser、dv-review
@@ -126,7 +127,16 @@ claude plugin update devkit-skills@devkit-skills # 再更新已安装插件
 
 会话内也可在 `/plugin` 的 **Installed** 中选 **Update now**，或在 **Marketplaces** 中开启自动更新（第三方市场默认关闭）。更新后按提示执行 `/reload-plugins` 或重启会话。
 
-版本以 `plugin.json` 的 `version` 为准；不提升版本号时，已安装用户不会收到新提交。`--plugin-dir` 方式每次启动直接读取当前文件，与版本号无关。
+跨宿主自动升级（Claude Code + Qoder CN）：
+
+```bash
+python3 <安装根>/scripts/upgrade.py --check   # 只读：版本、摘要、重复安装
+python3 <安装根>/scripts/upgrade.py --apply   # 官方更新 + 校验 + 同版本备份同步
+```
+
+默认同时处理两个宿主，`--host claude|qoder` 可限定。Claude 在版本号不变时会拒绝 `plugin update`，此时技能会先备份安装目录再同步内容；升级后需重启宿主或 `/reload-plugins`。
+
+版本以 `plugin.json` 的 `version` 为准；不提升版本号时，已安装用户可能收不到新提交。`--plugin-dir` 方式每次启动直接读取当前文件，与版本号无关。
 
 卸载：
 

@@ -1,6 +1,6 @@
 <!-- GENERATED: scripts/dv-help-gen.py -->
 
-共 18 个技能。自然语言可选技能，副作用由当次授权控制。
+共 19 个技能。自然语言可选技能，副作用由当次授权控制。
 
 | 技能 | 作用 | 能力范围 | 需明确意图的动作 | 可选关联 |
 |---|---|---|---|---|
@@ -22,3 +22,4 @@
 | dv-review | 三轴评审含未提交改动 | docs | 依任务范围 | dv-build, dv-done |
 | dv-route | 按目标选择最短研发路径 | 只读说明 | 依任务范围 | dv-help |
 | dv-test | 业务用例与测试执行 | docs, tests | 依任务范围 | dv-build, dv-review, dv-audit |
+| dv-upgrade | 跨宿主升级本机 devkit | install | install | dv-help |

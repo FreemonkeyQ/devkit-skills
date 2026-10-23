@@ -28,7 +28,7 @@ indexgen=module('indexgen','gen-docs-index.py')
 
 class MetadataTests(unittest.TestCase):
     def test_catalog(self):
-        records=catalog();self.assertEqual(len(records),18)
+        records=catalog();self.assertEqual(len(records),19)
         self.assertEqual(check()[0],[])
         for _,fm,_ in records:
             self.assertNotIn('disable-model-invocation',fm)
@@ -208,9 +208,17 @@ class SkillContractTests(unittest.TestCase):
         self.assertIn('只读',records['dv-review'][1])
         self.assertIn('独立临时副本',records['dv-audit'][1])
         self.assertIn('一手证据',records['dv-research'][1])
+    def test_upgrade_contract(self):
+        records={fm['name']:(fm,body) for _,fm,body in catalog()}
+        fm,body=records['dv-upgrade']
+        self.assertEqual(fm['metadata']['stage'],'meta')
+        self.assertEqual(fm['metadata']['effects'],['install'])
+        self.assertEqual(fm['metadata']['explicit-actions'],['install'])
+        for word in ('备份','不授权commit/push','重启','--check','--apply'):
+            self.assertIn(word,body)
     def test_evaluation_fixtures(self):
         cases=json.loads((ROOT/'evals/scenarios.json').read_text())['cases']
-        self.assertEqual(len(cases),9)
+        self.assertEqual(len(cases),10)
         for case in cases:self.assertTrue(case['forbid'])
 
 if __name__=='__main__':unittest.main()

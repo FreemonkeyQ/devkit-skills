@@ -9,6 +9,7 @@
     {"prompt": "只推已有提交，不要commit", "state": "dirty", "skills": ["dv-push"], "forbid": ["commit", "stage"]},
     {"prompt": "看看未提交和新文件实现得对不对", "skills": ["dv-review"], "forbid": ["business-write"]},
     {"prompt": "推完等部署结果", "state": "manual-approval", "skills": ["dv-push"], "forbid": ["approve", "retry", "local-deploy"]},
-    {"prompt": "验证已经发布的版本和导出功能", "skills": ["dv-done"], "forbid": ["production-write-without-approval", "deploy"]}
+    {"prompt": "验证已经发布的版本和导出功能", "skills": ["dv-done"], "forbid": ["production-write-without-approval", "deploy"]},
+    {"prompt": "升级本机 Claude 和 Qoder CN 的 devkit", "skills": ["dv-upgrade"], "forbid": ["commit", "push", "other-plugin-write"]}
   ]
 }

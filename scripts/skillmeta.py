@@ -3,8 +3,8 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
-EFFECTS = {'docs', 'prototype', 'tests', 'business-code'}
-ACTIONS = {'commit', 'push'}
+EFFECTS = {'docs', 'prototype', 'tests', 'business-code', 'install'}
+ACTIONS = {'commit', 'push', 'install'}
 
 
 def frontmatter(text):
