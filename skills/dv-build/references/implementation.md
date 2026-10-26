@@ -1,30 +1,35 @@
 # 多语言与桌面实施参考
 
-以下是判断清单，不是统一架构模板。以项目锁定版本、代表性代码和现有工具为准。
+以下是判断清单，不是统一架构模板。以项目锁定版本、代表性代码和现有工具为准。侦察与约定判定见 `discovery.md`，新项目见 `greenfield.md`，SQL/性能见 `performance.md`。
 
 ## Java
+- 先找现有 Service/DTO/Repository、公共 writer、异常与事务写法；能复用就不新建同类组件。
 - 读取pom/Gradle、JDK、Spring版本；不能以“最佳实践”顺手升级框架。
 - 沿用MVC/WebFlux和ORM选择。事务边界、异常回滚、自调用代理、懒加载、连接池属于实际风险。
 - 不在响应式事件线程阻塞数据库/文件；线程/定时任务有停止与取消策略。
 - 请求验证与授权分别处理；DTO/接口契约与数据库实体不要随意互换。
 
 ## Python
+- 先找现有 utils、fixtures、异常策略和 async 边界；标准库能做的就不加包。
 - 沿用venv/uv/Conda；区分同步和async调用，不把阻塞I/O扔进event loop。
 - 超时、取消、context manager、子进程回收和临时文件生命周期要可测试。
 - 类型检查与异常策略跟项目走；不要仅为新函数引入完整框架。
 
 ## Go
+- 先找现有 error wrap、interface 粒度、`internal/` 边界；不引入第二套 HTTP/DB 库。
 - context截止/取消向下传递，goroutine/channel/定时器必须有退出路径。
 - 明确锁保护数据和作用域，不跨网络I/O无谓持锁；适用时运行race检测。
 - error wrap保留原因，接口用真实需求定义，不为了mock过度抽象。
 - schema、事务、重试和幂等考虑多进程部署，不只单进程锁。
 
 ## JS/TS和Web
+- 先找现有组件、状态方案、日期/请求封装和设计令牌；不重复引入 UI 库或工具库。
 - 沿用包管理器/lockfile、Vue/React和状态方案，不在维护任务重写技术栈。
 - 避免过期async响应覆盖新请求、重复点击副作用、事件监听泄漏和无界缓存。
 - 组件测试验证用户行为，API权限在服务端，不依赖UI隐藏按钮。
 
 ## Electron/桌面
+- 先找现有 IPC、preload、窗口/托盘/更新逻辑；不新建第二套通道或存储。
 - browser验收只证明渲染层。主进程、preload、IPC、更新安装与系统集成分别验证。
 - renderer不持生产秘密；最小化preload暴露，IPC校验来源/参数/权限，不启用宽泛Node权限作为捷径。
 - 文件写入考虑权限、路径遍历、失败恢复；执行进程禁止拼接不可信shell命令。

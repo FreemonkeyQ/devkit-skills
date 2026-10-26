@@ -2,6 +2,7 @@
 
 ## 不背技能名
 “我想加导出，字段没定”→grill/plan；“按刚才方案实施”→build/test/review/done。
+“旧项目加接口/导出”→build（先分级侦察和复用台账）；“新项目从零开始”→build（官方 starter，不自建模板）。
 “只分析这个报错别改”→debug诊断；“看看未提交代码有没有问题”→review。
 “设计页面”→design，生产实现需实施意图；“跑测试”→test run，不修业务代码。
 “把相关修改按功能提交，不push”→commit；“push一下”→相关未commit先commit再push。
