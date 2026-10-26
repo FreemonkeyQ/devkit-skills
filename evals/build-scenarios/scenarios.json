@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "description": "Build-skill behavioural scenarios. Prompts are sent verbatim; expectations are kept out of the agent prompt.",
+  "scenarios": [
+    {
+      "id": "S1-reuse-csv-export",
+      "fixture": "legacy-java",
+      "permission": "acceptEdits",
+      "expected_skills": ["dv-build"],
+      "prompt": "给订单也加一个 CSV 导出接口，按项目现有做法来。",
+      "expectations": [
+        "复用了现有的 CsvExportWriter，而不是新写一套 CSV 序列化",
+        "沿用 CustomerExportService + CustomerController 的分层和命名",
+        "没有新增 Maven 依赖"
+      ],
+      "checks": [
+        {"type": "response_or_diff_contains", "pattern": "CsvExportWriter"},
+        {"type": "manifest_unchanged", "paths": ["pom.xml"]},
+        {"type": "changed_files_max", "value": 4}
+      ]
+    },
+    {
+      "id": "S2-follow-style",
+      "fixture": "legacy-java",
+      "permission": "acceptEdits",
+      "expected_skills": ["dv-build"],
+      "prompt": "订单列表加一个按客户名搜索的查询接口，分页保持现有风格。",
+      "expectations": [
+        "沿用 OrderController → OrderService → OrderRepository 的分层",
+        "返回 PageResponse<OrderResponse>，不引入新的响应包装",
+        "仓储查询使用 Spring Data 的 Pageable，不手写 offset/limit"
+      ],
+      "checks": [
+        {"type": "response_or_diff_contains", "pattern": "PageResponse"},
+        {"type": "response_or_diff_contains", "pattern": "Pageable|findByCustomerName"},
+        {"type": "changed_files_max", "value": 4}
+      ]
+    },
+    {
+      "id": "S3-reuse-date-format",
+      "fixture": "legacy-py",
+      "permission": "acceptEdits",
+      "expected_skills": ["dv-build"],
+      "prompt": "接口返回的时间要统一成 YYYY-MM-DD HH:mm，加个格式化工具。",
+      "expectations": [
+        "复用 app/timefmt.py 里已有的 format_dt",
+        "没有引入 pendulum/arrow/dateutil 等新依赖",
+        "没有在多个模块里重复实现同一格式化逻辑"
+      ],
+      "checks": [
+        {"type": "response_or_diff_contains", "pattern": "format_dt\\b"},
+        {"type": "manifest_unchanged", "paths": ["pyproject.toml"]},
+        {"type": "diff_not_contains", "pattern": "pendulum|arrow|dateutil"}
+      ]
+    },
+    {
+      "id": "S4-sql-performance",
+      "fixture": "legacy-java",
+      "permission": "plan",
+      "expected_skills": ["dv-debug", "dv-build"],
+      "prompt": "订单列表数据量大时会很慢，帮我看看问题并给优化方案。只分析，不改代码。",
+      "expectations": [
+        "指出 OrderService 里 order.getItems().size() 造成的 N+1",
+        "指出 searchSlow 的深 offset 分页问题，并建议 keyset 分页",
+        "提到需要索引或 EXPLAIN 验证，且没有声称已经实测提升"
+      ],
+      "checks": [
+        {"type": "response_contains_any", "patterns": ["N\\+1", "懒加载", "Lazy"]},
+        {"type": "response_contains_any", "patterns": ["keyset", "游标", "深分页", "OFFSET"]},
+        {"type": "response_contains_any", "patterns": ["EXPLAIN", "索引", "Index"]},
+        {"type": "no_unverified_perf_claim"}
+      ]
+    },
+    {
+      "id": "S5-greenfield-starter",
+      "fixture": "greenfield",
+      "permission": "plan",
+      "expected_skills": ["dv-build"],
+      "prompt": "这是一个新仓库，帮我做一个读取 CSV 并汇总的小型命令行工具。",
+      "expectations": [
+        "先确认或选择一个技术栈，而不是直接堆文件",
+        "推荐官方/社区脚手架（如 uv init、cargo new、npm create），并锁定版本",
+        "没有手写一套多文件骨架冒充脚手架"
+      ],
+      "checks": [
+        {"type": "response_contains_any", "patterns": ["uv init", "cargo new", "npm create", "go mod init", "dotnet new", "Spring Initializr"]},
+        {"type": "response_not_contains", "pattern": "我已经创建了.*项目"}
+      ]
+    },
+    {
+      "id": "S6-small-change-overhead",
+      "fixture": "legacy-java",
+      "permission": "acceptEdits",
+      "expected_skills": ["dv-build"],
+      "prompt": "把订单状态里的“已支付”文案改成“支付成功”。",
+      "expectations": [
+        "只改文案所在的一处，不扩大范围",
+        "没有触发全量项目扫描或生成文档",
+        "没有引入无关重构或新依赖"
+      ],
+      "checks": [
+        {"type": "diff_contains", "pattern": "支付成功"},
+        {"type": "changed_files_max", "value": 2},
+        {"type": "response_not_contains", "pattern": "全量扫描|项目画像|生成 wiki"}
+      ]
+    },
+    {
+      "id": "S7-first-use-onboarding",
+      "fixture": "legacy-java",
+      "permission": "plan",
+      "expected_skills": ["dv-context"],
+      "prompt": "这个仓库第一次用 devkit，先帮我摸清项目情况，再决定后面怎么做。",
+      "expectations": [
+        "读取 AGENTS.md、构建文件、测试入口和模块结构",
+        "建议先做接入/项目画像，而不是直接生成一份 wiki",
+        "没有声称已经创建配置或完成接入"
+      ],
+      "checks": [
+        {"type": "response_contains_any", "patterns": ["接入", "项目画像", "dv-context", "初始化"]},
+        {"type": "response_not_contains", "pattern": "已创建.*(wiki|Wiki)|已生成.*wiki"}
+      ]
+    },
+    {
+      "id": "S8-convention-conflict",
+      "fixture": "legacy-py",
+      "permission": "acceptEdits",
+      "expected_skills": ["dv-build"],
+      "prompt": "新增一个订单导出接口，按项目现有约定来。",
+      "expectations": [
+        "发现 app/orders.py 用 Depends(get_db) 而 app/admin.py 直接 SessionLocal()",
+        "不臆造单一约定；报告冲突或明确跟随某一处并说明理由",
+        "复用 report_builder.orders_to_csv，不重写 CSV 拼接"
+      ],
+      "checks": [
+        {"type": "response_contains_any", "patterns": ["Depends", "SessionLocal"]},
+        {"type": "response_contains_any", "patterns": ["冲突", "不一致", "两种", "混合"]},
+        {"type": "response_or_diff_contains", "pattern": "orders_to_csv"}
+      ]
+    }
+  ],
+  "negative_routes": [
+    {"prompt": "看看这次改动有没有问题", "skill": "dv-review"},
+    {"prompt": "跑一下测试", "skill": "dv-test"},
+    {"prompt": "这个报错为什么", "skill": "dv-debug"},
+    {"prompt": "把改动提交一下", "skill": "dv-commit"},
+    {"prompt": "push 一下", "skill": "dv-push"},
+    {"prompt": "升级本机 devkit", "skill": "dv-upgrade"},
+    {"prompt": "有哪些技能", "skill": "dv-help"},
+    {"prompt": "这个页面怎么设计", "skill": "dv-design"},
+    {"prompt": "帮我拆一下任务", "skill": "dv-plan"},
+    {"prompt": "调研一下这个库", "skill": "dv-research"}
+  ]
+}

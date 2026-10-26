@@ -37,3 +37,7 @@
 - 异常、中断与评估分歧：
 
 原始日志不要放凭据或无关会话。未执行记录为未执行，不填通过。单次示例正确不代表普遍可靠；不从这六项测试推断跨平台兼容、生产发布安全或优于其它技能库。
+
+## Build 场景评估
+
+`build-scenarios/` 是另一套按需评估材料，与 `depth-scenarios.json` 互补：3 个合成 fixture（legacy-java / legacy-py / greenfield）、8 个构建场景、`run.py`（无头宿主运行 + 确定性检查）和 `route.py`（description 词法路由）。它不进入 CI，`results/` 为运行时产物并已忽略；当前结果与限制见 `build-scenarios/README.md`。

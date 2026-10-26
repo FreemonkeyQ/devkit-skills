@@ -1,0 +1,4 @@
+# Evaluation results are runtime artefacts, not versioned evidence.
+results/
+__pycache__/
+*.pyc
