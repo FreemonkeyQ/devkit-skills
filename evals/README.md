@@ -40,4 +40,8 @@
 
 ## Build 场景评估
 
-`build-scenarios/` 是另一套按需评估材料，与 `depth-scenarios.json` 互补：3 个合成 fixture（legacy-java / legacy-py / greenfield）、8 个构建场景、`run.py`（无头宿主运行 + 确定性检查）和 `route.py`（description 词法路由）。它不进入 CI，`results/` 为运行时产物并已忽略；当前结果与限制见 `build-scenarios/README.md`。
+`build-scenarios/` 是另一套按需评估材料，与 `depth-scenarios.json` 互补：3 个合成 fixture（legacy-java / legacy-py / greenfield）、8 个构建场景、`run.py`（无头宿主运行 + 确定性检查 + `--no-plugin` 基线臂）和 `route.py`（description 词法路由）。它不进入 CI，`results/` 为运行时产物并已忽略；当前结果与限制见 `build-scenarios/README.md`。2026-10-26 的 `dv-build` A/B pilot 为 with-skill 17/18、no-skill 18/18，技能臂更慢且输出 token 更多；v2 快速路径复测后 S1 9/9、S6 成本已接近 no-skill 基线。
+
+## 全技能路由矩阵
+
+`routing/` 覆盖全部 19 个技能：57 个正例（每技能 3 条）、18 个相邻技能负例、12 个关键词难负例。`matrix.py` 计算 recall@1/@3、混淆对、trap 泄漏和 `dv-build` 误触发，结果写入已忽略的 `results/`。`host_matrix.py` 做真实宿主确认（31 条自然调用 + 显式对照），支持 `--host claude|qoder`。词法层只用于预筛；宿主基线按模型分开记录：deepseek 10/31、claude-opus-5-5 14/31、Qoder+claude-fable-5 可评分 14 条中正例 8/10（17 条被通道内容过滤拒绝），详见 `routing/README.md`。

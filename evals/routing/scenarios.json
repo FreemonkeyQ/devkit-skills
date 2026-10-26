@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "description": "Full routing matrix inputs. Positive prompts are rewritten user speech, not description text. Negative and hard-negative cases name the skill that should win and the trap that lexical similarity tends to pick.",
+  "cases": [
+    {"id": "P-arch-1", "type": "positive", "primary": "dv-arch", "want": ["dv-arch"], "prompt": "订单和库存现在揉在一个服务里，想拆开，先给我迁移边界和风险清单"},
+    {"id": "P-arch-2", "type": "positive", "primary": "dv-arch", "want": ["dv-arch"], "prompt": "这个老模块要换成新实现，帮我规划兼容期和测试接缝"},
+    {"id": "P-arch-3", "type": "positive", "primary": "dv-arch", "want": ["dv-arch"], "prompt": "支付和结算的职责混在一起，怎么划模块边界比较稳"},
+
+    {"id": "P-audit-1", "type": "positive", "primary": "dv-audit", "want": ["dv-audit"], "prompt": "测试全绿但我怀疑根本没抓到 bug，帮我看看用例是不是真有效"},
+    {"id": "P-audit-2", "type": "positive", "primary": "dv-audit", "want": ["dv-audit"], "prompt": "这几个类绕得太厉害，评估一下复杂度和维护风险，只出报告"},
+    {"id": "P-audit-3", "type": "positive", "primary": "dv-audit", "want": ["dv-audit"], "prompt": "给这个代码库做次体检，重点看测试质量和复杂度"},
+
+    {"id": "P-author-1", "type": "positive", "primary": "dv-author", "want": ["dv-author"], "prompt": "我想给团队加一个处理 CSV 的技能，帮我从零建一个"},
+    {"id": "P-author-2", "type": "positive", "primary": "dv-author", "want": ["dv-author"], "prompt": "把现有的 dv-build 技能改一下，让它在老项目里更谨慎"},
+    {"id": "P-author-3", "type": "positive", "primary": "dv-author", "want": ["dv-author"], "prompt": "评估一下这个技能仓库里哪些技能该合并或删掉"},
+
+    {"id": "P-browser-1", "type": "positive", "primary": "dv-browser", "want": ["dv-browser"], "prompt": "用浏览器把注册流程从头点一遍，看看有没有报错"},
+    {"id": "P-browser-2", "type": "positive", "primary": "dv-browser", "want": ["dv-browser"], "prompt": "给列表页塞十万条数据，看看会不会卡死或者内存涨爆"},
+    {"id": "P-browser-3", "type": "positive", "primary": "dv-browser", "want": ["dv-browser"], "prompt": "线上首页白屏，帮我开浏览器复现并抓一下控制台"},
+
+    {"id": "P-build-1", "type": "positive", "primary": "dv-build", "want": ["dv-build"], "prompt": "订单接口再加一个按状态筛选的参数，按现有写法来"},
+    {"id": "P-build-2", "type": "positive", "primary": "dv-build", "want": ["dv-build"], "prompt": "把用户列表的时间字段统一成 YYYY-MM-DD"},
+    {"id": "P-build-3", "type": "positive", "primary": "dv-build", "want": ["dv-build"], "prompt": "这个新仓库帮我搭一个读日志并统计的 CLI"},
+
+    {"id": "P-commit-1", "type": "positive", "primary": "dv-commit", "want": ["dv-commit"], "prompt": "把现在的改动整理成几条提交，先别推"},
+    {"id": "P-commit-2", "type": "positive", "primary": "dv-commit", "want": ["dv-commit"], "prompt": "帮我写个提交信息，只给我看，不要执行"},
+    {"id": "P-commit-3", "type": "positive", "primary": "dv-commit", "want": ["dv-commit"], "prompt": "这些修改按功能拆成两次 commit"},
+
+    {"id": "P-context-1", "type": "positive", "primary": "dv-context", "want": ["dv-context"], "prompt": "第一次在这个仓库用 devkit，先摸清用了什么框架、怎么跑测试"},
+    {"id": "P-context-2", "type": "positive", "primary": "dv-context", "want": ["dv-context"], "prompt": "这个项目画像和 .devkit 里的状态对不上，帮我核对"},
+    {"id": "P-context-3", "type": "positive", "primary": "dv-context", "want": ["dv-context"], "prompt": "帮我把 devkit 接到这个新仓库，补好 AGENTS 里的技能段"},
+
+    {"id": "P-debug-1", "type": "positive", "primary": "dv-debug", "want": ["dv-debug"], "prompt": "这个 500 报错为什么会出现，只定位不改"},
+    {"id": "P-debug-2", "type": "positive", "primary": "dv-debug", "want": ["dv-debug"], "prompt": "昨天还好的测试今天偶发失败，帮我找根因"},
+    {"id": "P-debug-3", "type": "positive", "primary": "dv-debug", "want": ["dv-debug"], "prompt": "订单查询最近突然变慢，慢查询出在哪一步"},
+
+    {"id": "P-design-1", "type": "positive", "primary": "dv-design", "want": ["dv-design"], "prompt": "这个列表页的空状态和加载失败怎么设计"},
+    {"id": "P-design-2", "type": "positive", "primary": "dv-design", "want": ["dv-design"], "prompt": "注册流程的交互稿帮我定一下，包括错误提示和动效"},
+    {"id": "P-design-3", "type": "positive", "primary": "dv-design", "want": ["dv-design"], "prompt": "给这个后台页面出一版结构和状态设计，交给前端实现"},
+
+    {"id": "P-done-1", "type": "positive", "primary": "dv-done", "want": ["dv-done"], "prompt": "这个需求做完了吗，帮我核对一下证据和缺口"},
+    {"id": "P-done-2", "type": "positive", "primary": "dv-done", "want": ["dv-done"], "prompt": "发布前验收一下，确认导出的文件真的能打开"},
+    {"id": "P-done-3", "type": "positive", "primary": "dv-done", "want": ["dv-done"], "prompt": "汇报一下这次任务完成情况，哪些还没验证"},
+
+    {"id": "P-grill-1", "type": "positive", "primary": "dv-grill", "want": ["dv-grill"], "prompt": "这个需求我还很模糊，你多问几轮帮我把边界问清楚"},
+    {"id": "P-grill-2", "type": "positive", "primary": "dv-grill", "want": ["dv-grill"], "prompt": "帮我审一下这个方案，哪里站不住脚"},
+    {"id": "P-grill-3", "type": "positive", "primary": "dv-grill", "want": ["dv-grill"], "prompt": "跟产品对齐前，先把没定的问题逐条问出来"},
+
+    {"id": "P-help-1", "type": "positive", "primary": "dv-help", "want": ["dv-help"], "prompt": "devkit 有哪些技能，分别干什么"},
+    {"id": "P-help-2", "type": "positive", "primary": "dv-help", "want": ["dv-help"], "prompt": "dv-commit 怎么用，参数有哪些"},
+    {"id": "P-help-3", "type": "positive", "primary": "dv-help", "want": ["dv-help"], "prompt": "我输入的话没触发技能，帮我查查为什么"},
+
+    {"id": "P-plan-1", "type": "positive", "primary": "dv-plan", "want": ["dv-plan"], "prompt": "方案已经定了，帮我写成规格再拆成工单"},
+    {"id": "P-plan-2", "type": "positive", "primary": "dv-plan", "want": ["dv-plan"], "prompt": "把这个需求拆成能独立上线的几个任务，标好依赖"},
+    {"id": "P-plan-3", "type": "positive", "primary": "dv-plan", "want": ["dv-plan"], "prompt": "给我出个执行计划，按垂直切片分"},
+
+    {"id": "P-push-1", "type": "positive", "primary": "dv-push", "want": ["dv-push"], "prompt": "把当前分支推上去"},
+    {"id": "P-push-2", "type": "positive", "primary": "dv-push", "want": ["dv-push"], "prompt": "把这些提交推到远端，不要动未提交的改动"},
+    {"id": "P-push-3", "type": "positive", "primary": "dv-push", "want": ["dv-push"], "prompt": "只推已有的 commit，别新提交"},
+
+    {"id": "P-research-1", "type": "positive", "primary": "dv-research", "want": ["dv-research"], "prompt": "查一下这个库 2.x 和 3.x 到底差在哪，给官方依据"},
+    {"id": "P-research-2", "type": "positive", "primary": "dv-research", "want": ["dv-research"], "prompt": "这个框架的鉴权中间件在请求链里怎么走的，找源码确认"},
+    {"id": "P-research-3", "type": "positive", "primary": "dv-research", "want": ["dv-research"], "prompt": "调研一下同类方案，给出可追溯的结论"},
+
+    {"id": "P-review-1", "type": "positive", "primary": "dv-review", "want": ["dv-review"], "prompt": "看看这次未提交的改动有没有问题"},
+    {"id": "P-review-2", "type": "positive", "primary": "dv-review", "want": ["dv-review"], "prompt": "提交前帮我审下 diff，按正确性和项目规范分开说"},
+    {"id": "P-review-3", "type": "positive", "primary": "dv-review", "want": ["dv-review"], "prompt": "这个 MR 有没有偏离最初的需求"},
+
+    {"id": "P-route-1", "type": "positive", "primary": "dv-route", "want": ["dv-route"], "prompt": "我不知道下一步该干嘛，帮我选条最短路径"},
+    {"id": "P-route-2", "type": "positive", "primary": "dv-route", "want": ["dv-route"], "prompt": "这个任务该先用哪个技能，帮我编排一下"},
+    {"id": "P-route-3", "type": "positive", "primary": "dv-route", "want": ["dv-route"], "prompt": "状态有点乱，你看我现在先做什么"},
+
+    {"id": "P-test-1", "type": "positive", "primary": "dv-test", "want": ["dv-test"], "prompt": "给订单取消逻辑补几个业务用例"},
+    {"id": "P-test-2", "type": "positive", "primary": "dv-test", "want": ["dv-test"], "prompt": "帮我写测试覆盖并发重复提交，不要改业务代码"},
+    {"id": "P-test-3", "type": "positive", "primary": "dv-test", "want": ["dv-test"], "prompt": "运行现有测试，把失败的场景补成用例"},
+
+    {"id": "P-upgrade-1", "type": "positive", "primary": "dv-upgrade", "want": ["dv-upgrade"], "prompt": "把本机 Claude Code 里的 devkit 升到最新"},
+    {"id": "P-upgrade-2", "type": "positive", "primary": "dv-upgrade", "want": ["dv-upgrade"], "prompt": "Qoder CN 和 Claude 装的 devkit 版本不一样，帮我同步"},
+    {"id": "P-upgrade-3", "type": "positive", "primary": "dv-upgrade", "want": ["dv-upgrade"], "prompt": "devkit 有新版本吗，有的话更新本机安装"},
+
+    {"id": "N-test-run", "type": "negative", "primary": "dv-test", "want": ["dv-test"], "trap": "dv-audit", "prompt": "跑一下现有测试"},
+    {"id": "N-commit-change", "type": "negative", "primary": "dv-commit", "want": ["dv-commit"], "trap": "dv-push", "prompt": "把这次改动提交一下"},
+    {"id": "N-debug-error", "type": "negative", "primary": "dv-debug", "want": ["dv-debug"], "trap": "dv-research", "prompt": "这个报错为什么会这样"},
+    {"id": "N-review-diff", "type": "negative", "primary": "dv-review", "want": ["dv-review"], "trap": "dv-build", "prompt": "看看这次改动有没有问题"},
+    {"id": "N-push-now", "type": "negative", "primary": "dv-push", "want": ["dv-push"], "trap": "dv-commit", "prompt": "push 一下"},
+    {"id": "N-help-list", "type": "negative", "primary": "dv-help", "want": ["dv-help"], "trap": "dv-author", "prompt": "devkit 里都有什么技能"},
+    {"id": "N-design-page", "type": "negative", "primary": "dv-design", "want": ["dv-design"], "trap": "dv-help", "prompt": "这个页面怎么设计"},
+    {"id": "N-plan-split", "type": "negative", "primary": "dv-plan", "want": ["dv-plan"], "trap": "dv-done", "prompt": "帮我拆一下任务"},
+    {"id": "N-research-lib", "type": "negative", "primary": "dv-research", "want": ["dv-research"], "trap": "dv-route", "prompt": "调研一下这个库"},
+    {"id": "N-upgrade-install", "type": "negative", "primary": "dv-upgrade", "want": ["dv-upgrade"], "trap": "dv-help", "prompt": "升级本机 devkit"},
+    {"id": "N-context-first", "type": "negative", "primary": "dv-context", "want": ["dv-context"], "trap": "dv-upgrade", "prompt": "这个仓库第一次用 devkit"},
+    {"id": "N-done-check", "type": "negative", "primary": "dv-done", "want": ["dv-done"], "trap": "dv-build", "prompt": "这个任务做完了吗"},
+    {"id": "N-grill-review", "type": "negative", "primary": "dv-grill", "want": ["dv-grill"], "trap": "dv-review", "prompt": "这个方案你帮我挑挑毛病"},
+    {"id": "N-audit-effective", "type": "negative", "primary": "dv-audit", "want": ["dv-audit"], "trap": "dv-test", "prompt": "测试真的能抓 bug 吗"},
+    {"id": "N-browser-click", "type": "negative", "primary": "dv-browser", "want": ["dv-browser"], "trap": "dv-debug", "prompt": "用浏览器点一遍"},
+    {"id": "N-arch-module", "type": "negative", "primary": "dv-arch", "want": ["dv-arch"], "trap": "dv-plan", "prompt": "这个模块怎么拆"},
+    {"id": "N-author-new", "type": "negative", "primary": "dv-author", "want": ["dv-author"], "trap": "dv-build", "prompt": "帮我建个新技能"},
+    {"id": "N-route-next", "type": "negative", "primary": "dv-route", "want": ["dv-route"], "trap": "dv-plan", "prompt": "下一步做什么"},
+
+    {"id": "H-help-build", "type": "hard-negative", "primary": "dv-help", "want": ["dv-help"], "trap": "dv-build", "prompt": "dv-build 技能怎么用"},
+    {"id": "H-author-excel", "type": "hard-negative", "primary": "dv-author", "want": ["dv-author"], "trap": "dv-build", "prompt": "帮我写一个处理 Excel 的技能"},
+    {"id": "H-review-before-commit", "type": "hard-negative", "primary": "dv-review", "want": ["dv-review"], "trap": "dv-commit", "prompt": "提交前看下这次的 diff"},
+    {"id": "H-build-review-comments", "type": "hard-negative", "primary": "dv-build", "want": ["dv-build"], "trap": "dv-review", "prompt": "把评审意见改到代码里"},
+    {"id": "H-context-init", "type": "hard-negative", "primary": "dv-context", "want": ["dv-context"], "trap": "dv-build", "prompt": "这个新项目用 devkit 初始化"},
+    {"id": "H-done-deploy", "type": "hard-negative", "primary": "dv-done", "want": ["dv-done"], "trap": "dv-push", "prompt": "部署完了帮我确认线上导出能用"},
+    {"id": "H-debug-sql", "type": "hard-negative", "primary": "dv-debug", "want": ["dv-debug"], "trap": "dv-build", "prompt": "这个 SQL 很慢，先解释原因别改"},
+    {"id": "H-design-empty", "type": "hard-negative", "primary": "dv-design", "want": ["dv-design"], "trap": "dv-build", "prompt": "页面空态怎么画"},
+    {"id": "H-push-existing", "type": "hard-negative", "primary": "dv-push", "want": ["dv-push"], "trap": "dv-commit", "prompt": "把这次改动推上去，但先别提交新的"},
+    {"id": "H-grill-before-code", "type": "hard-negative", "primary": "dv-grill", "want": ["dv-grill"], "trap": "dv-build", "prompt": "这个需求还没定，先别写代码"},
+    {"id": "H-audit-coverage", "type": "hard-negative", "primary": "dv-audit", "want": ["dv-audit"], "trap": "dv-test", "prompt": "跑一下测试，看看覆盖率是不是假的"},
+    {"id": "H-research-known-issue", "type": "hard-negative", "primary": "dv-research", "want": ["dv-research"], "trap": "dv-debug", "prompt": "这个报错官方有没有已知问题"}
+  ]
+}

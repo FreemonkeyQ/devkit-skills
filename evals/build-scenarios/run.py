@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -26,6 +27,9 @@ ROOT = HERE.parents[1]
 FIXTURES = HERE / "fixtures"
 RESULTS = HERE / "results"
 SCENARIOS = HERE / "scenarios.json"
+
+sys.path.insert(0, str(ROOT / "evals" / "routing"))
+from host_matrix import QODER_STRIP_ENV, qoder_cli_binary  # noqa: E402
 
 
 def load_scenarios():
@@ -69,16 +73,68 @@ def hash_manifests(dest: Path, paths: list[str]) -> dict[str, str]:
     return {path: sha256(dest / path) for path in paths if (dest / path).is_file()}
 
 
-def run_claude(prompt: str, cwd: Path, permission: str, timeout: int) -> subprocess.CompletedProcess:
+def run_claude(
+    prompt: str,
+    cwd: Path,
+    permission: str,
+    timeout: int,
+    no_plugin: bool = False,
+    model: str | None = None,
+    host: str = "claude",
+) -> subprocess.CompletedProcess:
     allowed = ["Read", "Glob", "Grep"]
     if permission != "plan":
         allowed += ["Write", "Edit", "Bash"]
-    cmd = [
-        "claude",
-        "-p",
-        prompt,
-        "--plugin-dir",
-        str(ROOT),
+    if host == "qoder":
+        qoder_permission = "dont_ask" if permission == "plan" else "accept_edits"
+        cmd = [str(qoder_cli_binary())]
+        if no_plugin:
+            cmd.extend(["--tools", *[t for t in allowed if t != "Skill"]])
+        else:
+            cmd.extend(["--plugin-dir", str(ROOT), "--tools", "Skill", *allowed])
+        cmd.extend([
+            "--permission-mode",
+            qoder_permission,
+            "--output-format",
+            "stream-json",
+            "--input-format",
+            "stream-json",
+            "--strict-mcp-config",
+            "--settings",
+            '{"disableAllHooks": true}',
+        ])
+        if model:
+            cmd.extend(["-m", model])
+        env = {
+            key: value
+            for key, value in os.environ.items()
+            if key not in QODER_STRIP_ENV
+        }
+        payload = json.dumps(
+            {
+                "type": "user",
+                "message": {
+                    "role": "user",
+                    "content": [{"type": "text", "text": prompt}],
+                },
+            },
+            ensure_ascii=False,
+        ) + "\n"
+        return subprocess.run(
+            cmd,
+            cwd=cwd,
+            input=payload,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            env=env,
+        )
+    cmd = ["claude", "-p", prompt]
+    if no_plugin:
+        cmd.append("--disable-slash-commands")
+    else:
+        cmd.extend(["--plugin-dir", str(ROOT)])
+    cmd.extend([
         "--permission-mode",
         permission,
         "--output-format",
@@ -92,7 +148,9 @@ def run_claude(prompt: str, cwd: Path, permission: str, timeout: int) -> subproc
         "--strict-mcp-config",
         "--settings",
         '{"disableAllHooks": true}',
-    ]
+    ])
+    if model:
+        cmd.extend(["--model", model])
     return subprocess.run(
         cmd,
         cwd=cwd,
@@ -308,8 +366,27 @@ def main() -> int:
         action="store_true",
         help="prepend 'use <expected skill>' so the skill body is exercised",
     )
+    parser.add_argument(
+        "--no-plugin",
+        action="store_true",
+        help="do not load this plugin and disable all skills (baseline arm)",
+    )
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--model",
+        default=None,
+        help="pass --model to the host CLI (alias or full id)",
+    )
+    parser.add_argument(
+        "--host",
+        choices=["claude", "qoder"],
+        default="claude",
+        help="host CLI to drive: claude (Claude Code) or qoder (Qoder CLI CN)",
+    )
     args = parser.parse_args()
+    if args.no_plugin and args.explicit_skill:
+        print("--no-plugin conflicts with --explicit-skill", file=sys.stderr)
+        return 2
 
     data = load_scenarios()
     scenarios = data["scenarios"]
@@ -331,9 +408,14 @@ def main() -> int:
     out_root = RESULTS / f"{timestamp}-{args.arm}"
     out_root.mkdir(parents=True, exist_ok=True)
 
-    host_version = subprocess.run(
-        ["claude", "--version"], capture_output=True, text=True
-    ).stdout.strip()
+    if args.host == "qoder":
+        host_name = "qoder-cli-cn"
+        host_version = qoder_cli_binary().name
+    else:
+        host_name = "claude-code"
+        host_version = subprocess.run(
+            ["claude", "--version"], capture_output=True, text=True
+        ).stdout.strip()
     try:
         repo_rev = subprocess.run(
             ["git", "-C", str(ROOT), "rev-parse", "HEAD"],
@@ -345,13 +427,15 @@ def main() -> int:
     meta = {
         "arm": args.arm,
         "timestamp": timestamp,
-        "host": "claude-code",
+        "host": host_name,
         "host_version": host_version,
+        "model_arg": args.model,
         "repo_rev": repo_rev,
         "plugin_dir": str(ROOT),
         "runs_per_scenario": args.runs,
         "judge": args.judge,
         "explicit_skill": args.explicit_skill,
+        "no_plugin": args.no_plugin,
         "hooks_disabled": True,
         "scenarios_file_sha256": sha256(SCENARIOS),
     }
@@ -387,7 +471,13 @@ def main() -> int:
                     skill = (scenario.get("expected_skills") or ["dv-build"])[0]
                     sent_prompt = f"请使用 {skill} 技能完成以下任务：\n\n{sent_prompt}"
                 proc = run_claude(
-                    sent_prompt, dest, scenario["permission"], args.timeout
+                    sent_prompt,
+                    dest,
+                    scenario["permission"],
+                    args.timeout,
+                    no_plugin=args.no_plugin,
+                    model=args.model,
+                    host=args.host,
                 )
                 elapsed = (datetime.now(timezone.utc) - started).total_seconds()
                 response, tool_calls, usage, models = parse_stream(proc.stdout)

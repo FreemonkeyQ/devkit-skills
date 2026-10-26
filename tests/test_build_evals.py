@@ -1,6 +1,7 @@
 """Validate build-scenario evaluation materials, not skill execution."""
 import json
 import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -97,6 +98,31 @@ class BuildEvaluationMaterialTests(unittest.TestCase):
         self.assertTrue((BASE / "run.py").is_file())
         self.assertTrue((BASE / "route.py").is_file())
         self.assertTrue((BASE / "README.md").is_file())
+
+    def test_no_plugin_arm_flags(self):
+        runner = BASE / "run.py"
+        conflict = subprocess.run(
+            [sys.executable, str(runner), "--no-plugin", "--explicit-skill", "--dry-run"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(conflict.returncode, 2)
+        dry = subprocess.run(
+            [
+                sys.executable,
+                str(runner),
+                "--no-plugin",
+                "--scenario",
+                "S1-reuse-csv-export",
+                "--dry-run",
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(dry.returncode, 0, dry.stderr)
+        self.assertIn("S1-reuse-csv-export", dry.stdout)
 
     def test_results_are_gitignored(self):
         if not (ROOT / ".git").is_dir():
