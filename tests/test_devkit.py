@@ -1,6 +1,7 @@
 import importlib.util
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -187,6 +188,58 @@ class DocContractTests(unittest.TestCase):
             self.assertEqual(indexgen.main(),0)
             self.assertIn('[标题A]',first)
             self.assertIn('定稿',first)
+    def test_strict_sections_present_pass(self):
+        with tempfile.TemporaryDirectory() as t:
+            root=self.project(t,'strict')
+            body='# a\n\n- 状态：草稿\n\n'+''.join(f'## {s}\n\nx\n\n' for s in docscheck.schema()['sections']['specs'])
+            self.write(root,'.devkit/specs/001-a.md',body)
+            indexgen.main.__globals__['sys'].argv=['gen','--project',t]
+            self.assertEqual(indexgen.main(),0)
+            errors,warnings=docscheck.check(t)
+            self.assertEqual([e for e in errors if 'C5' in e],[],errors)
+    def test_ticket_evidence_paths(self):
+        with tempfile.TemporaryDirectory() as t:
+            root=self.project(t)
+            (root/'src').mkdir();(root/'src/a.py').write_text('x')
+            self.write(root,'.devkit/issues/001-a.md','# a\n\n- 状态：待实施\n\n## 依据\n\n`src/a.py` 与 `docs/specs/001-a.md`\n\n'
+                '## 证据\n\n- `src/a.py` 退出码 0\n- `src/missing.py` 退出码 0\n'
+                '- `logs/run.log`\n- `/tmp/out.json`\n- `src/NNN-x.py`\n')
+            errors,_=docscheck.check(t)
+            hits=[e for e in errors if 'C9' in e]
+            self.assertEqual(len(hits),1,hits)
+            self.assertIn('src/missing.py',hits[0])
+    def test_review_axis_evidence(self):
+        with tempfile.TemporaryDirectory() as t:
+            root=self.project(t)
+            (root/'src').mkdir();(root/'src/ok.ts').write_text('x')
+            self.write(root,'docs/reviews/2026-10-29-x.md','# r\n\n## Correctness\n\n`src/gone.ts:12`\n\n'
+                '## Standards\n\n`src/ok.ts:3`\n')
+            errors,_=docscheck.check(t)
+            hits=[e for e in errors if 'C9' in e]
+            self.assertEqual(len(hits),1,hits)
+            self.assertIn('src/gone.ts',hits[0])
+
+
+class DocSchemaTests(unittest.TestCase):
+    """ARTIFACTS.md must stay a readable mirror of scripts/docs.schema.json."""
+    def section(self,text,title):
+        start=text.index(title);end=text.find('\n## ',start+len(title))
+        return text[start:end if end!=-1 else len(text)]
+    def test_artifacts_match_schema(self):
+        schema=json.loads((ROOT/'scripts/docs.schema.json').read_text(encoding='utf-8'))
+        artifacts=(ROOT/'ARTIFACTS.md').read_text(encoding='utf-8')
+        labels={'规格':'specs','工单':'issues','ADR':'adr','变更提案':'changes'}
+        states=self.section(artifacts,'## 状态词表')
+        for label,kind in labels.items():
+            row=next(line for line in states.splitlines() if line.startswith(f'| {label} |'))
+            expected=list(schema['status'][kind]['values'])
+            if schema['status'][kind].get('supersede'):expected.append('被 NNNN 取代')
+            self.assertEqual(set(re.findall(r'`([^`]+)`',row)),set(expected),label)
+        required=self.section(artifacts,'## 必填小节')
+        for label,kind in labels.items():
+            line=next(line for line in required.splitlines() if line.startswith(f'- {label}：'))
+            listed=[s.strip() for s in re.sub(r'（[^）]*）','',line.split('：',1)[1]).split('/')]
+            self.assertEqual(listed,schema['sections'][kind],label)
 
 
 class SkillContractTests(unittest.TestCase):
@@ -206,6 +259,8 @@ class SkillContractTests(unittest.TestCase):
             for word in ('并行执行','串行','不伪称已分发'):
                 self.assertIn(word,body)
         self.assertIn('只读',records['dv-review'][1])
+        for word in ('3 个','未确认停止前'):
+            self.assertIn(word,records['dv-review'][1])
         self.assertIn('独立临时副本',records['dv-audit'][1])
         self.assertIn('一手证据',records['dv-research'][1])
     def test_upgrade_contract(self):

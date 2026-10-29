@@ -168,7 +168,7 @@ python3 scripts/check-docs.py --project <项目根>        # 只读校验，非�
 python3 scripts/gen-docs-index.py --project <项目根>    # 生成 docs/INDEX.md
 ```
 
-未启用 `strict` 时只校验文件名、编号、状态词、引用与索引，不校验必填小节；不得宣称“格式已强制”。
+未启用 `strict` 时只校验文件名、编号、状态词、引用、证据路径与索引，不校验必填小节；不得宣称“格式已强制”。枚举与小节定义见 `scripts/docs.schema.json`。
 
 状态可选；`state.json` 只提示会话恢复，不覆盖当前指令、Git 和实测证据。
 

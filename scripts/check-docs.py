@@ -22,25 +22,81 @@ PATTERNS = {
     'design': re.compile(rf'^{SLUG}\.md$'),
 }
 
-STATUS = {
-    'specs': re.compile(r'^(草稿|定稿|弃用)$'),
-    'issues': re.compile(r'^(待实施|实施中|已验证|阻塞|已放弃)$'),
-    'adr': re.compile(r'^(提议|采纳|弃用|被 \d{4} 取代)$'),
-    'changes': re.compile(r'^(提案|已应用|已归档)$'),
+PATTERN_HINT = {
+    'specs': 'NNN-<slug>.md or NNN-<slug>/',
+    'issues': 'NNN-<slug>.md',
+    'adr': 'NNNN-<slug>.md',
+    'changes': 'YYYY-MM-DD-<slug>/',
+    'research': 'YYYY-MM-DD-<slug>.md',
+    'reviews': 'YYYY-MM-DD-<slug>.md',
+    'audits': 'YYYY-MM-DD-<slug>.md',
+    'design': '<slug>.md',
 }
 
-SECTIONS = {
-    'specs': ['背景与目标', '范围', '非目标', '用户故事', '实施决策', '测试决策', '未决与阻塞', '验收标准'],
-    'issues': ['依据', '范围与非目标', '依赖', '交付', '验证', '证据'],
-    'adr': ['背景', '选项', '决定', '后果', '确认方式', '相关'],
-    'changes': ['动机', '范围', '非目标', '受影响规格', '验证与回滚'],
-}
-
+SCHEMA = Path(__file__).with_name('docs.schema.json')
 ID_FIELDS = {'specs': 3, 'issues': 3, 'adr': 4}
-H2 = re.compile(r'^##\s+(.+?)\s*$', re.M)
+H2 = re.compile(r'^##\s+(.+?)\s*$')
 STATUS_LINE = re.compile(r'^\s*-?\s*状态[:：]\s*(.+?)\s*$', re.M)
 LINKED = re.compile(r'`([^`<>\n]+(?:\.md|/))`')
+BACKTICK = re.compile(r'`([^`<>\n]+)`')
 MD_LINK = re.compile(r'\]\(([^)\s]+)\)')
+PLACEHOLDER = ('NNN', 'YYYY')
+
+
+def schema():
+    """Load scripts/docs.schema.json: the single source for enums and sections."""
+    try:
+        data = json.loads(SCHEMA.read_text(encoding='utf-8'))
+        status, allowed = {}, {}
+        for kind, spec in data['status'].items():
+            values = list(spec['values'])
+            pattern = [re.escape(v) for v in values]
+            if spec.get('supersede'):
+                values.append('被 NNNN 取代')
+                pattern.append(r'被 \d{4} 取代')
+            allowed[kind] = values
+            status[kind] = re.compile('^(?:' + '|'.join(pattern) + ')$')
+        return {
+            'status': status,
+            'allowed': allowed,
+            'sections': data['sections'],
+            'evidence': data['evidence']['sections'],
+            'extensions': {e.lower() for e in data['evidence']['extensions']},
+        }
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise ValueError(f'cannot load {SCHEMA.name}: {exc}')
+
+
+def h2_bodies(text):
+    """Map each H2 heading to its body without compiling file-wide regexes."""
+    result, current = [], None
+    for line in text.splitlines():
+        match = H2.match(line)
+        if match:
+            current = []
+            result.append((match.group(1).strip(), current))
+        elif current is not None:
+            current.append(line)
+    return [(heading, '\n'.join(lines)) for heading, lines in result]
+
+
+def cited_paths(text, extensions):
+    """Backticked repo-relative code/config paths; logs, globs and placeholders excluded."""
+    for token in BACKTICK.findall(text):
+        token = token.strip()
+        if not token or ' ' in token or token.startswith(('/', '..')):
+            continue
+        if any(char in token for char in '<>*?`'):
+            continue
+        if any(mark in token for mark in PLACEHOLDER):
+            continue
+        path = re.sub(r'(?::\d+(?:-\d+)?)+$|#L\d+$', '', token)
+        name = path.rsplit('/', 1)[-1]
+        if '.' not in name:
+            continue
+        if name.rsplit('.', 1)[1].lower() not in extensions:
+            continue
+        yield path
 
 
 def read(p):
@@ -79,6 +135,10 @@ def check(project):
     profile = cfg['docs']['profile']
     if profile == 'off':
         return [], ['profile=off: only C1 (path containment) enforced']
+    try:
+        spec = schema()
+    except ValueError as exc:
+        return [f'C1 {exc}'], []
     paths = cfg['paths']
 
     seen = {}
@@ -90,7 +150,7 @@ def check(project):
             if kind == 'changes' and entry.name == 'archive':
                 continue
             if not PATTERNS[kind].match(entry.name):
-                errors.append(f'C2 {rel}: name does not match {kind} pattern')
+                errors.append(f'C2 {rel}: name does not match {kind} pattern (expected {PATTERN_HINT[kind]})')
                 continue
             artifacts.setdefault(kind, []).append(entry)
             target = body_file(kind, entry)
@@ -109,18 +169,20 @@ def check(project):
                 else:
                     seen[key] = rel_body
 
-            if kind in STATUS:
+            if kind in spec['status']:
                 match = STATUS_LINE.search(text[:1200])
                 if not match:
-                    errors.append(f'C4 {rel_body}: missing status line')
-                elif not STATUS[kind].match(match.group(1)):
-                    errors.append(f'C4 {rel_body}: status "{match.group(1)}" not in enum')
+                    errors.append(f'C4 {rel_body}: missing status line (expected "- 状态：<value>")')
+                elif not spec['status'][kind].match(match.group(1)):
+                    allowed = ' | '.join(spec['allowed'][kind])
+                    errors.append(f'C4 {rel_body}: status "{match.group(1)}" not in enum (allowed: {allowed})')
 
+            sections = spec['sections'].get(kind, [])
             if profile == 'strict':
-                heads = [h.strip() for h in H2.findall(text)]
-                for want in SECTIONS.get(kind, []):
+                heads = [heading for heading, _ in h2_bodies(text)]
+                for want in sections:
                     if not any(want in h for h in heads):
-                        errors.append(f'C5 {rel_body}: missing section {want}')
+                        errors.append(f'C5 {rel_body}: missing section {want} (required: {" / ".join(sections)})')
 
             for link in LINKED.findall(text):
                 if link.startswith('/') or link.startswith('..'):
@@ -129,7 +191,23 @@ def check(project):
                     continue
                 candidates = [target.parent / link, project / link]
                 if not any(c.exists() for c in candidates):
-                    errors.append(f'C6 {rel_body}: reference not found: {link}')
+                    errors.append(f'C6 {rel_body}: reference not found: {link} (checked relative to the document and the project root)')
+
+            evidence_headings = spec['evidence'].get(kind, [])
+            if evidence_headings:
+                bodies = [body for heading, body in h2_bodies(text)
+                          if any(want in heading for want in evidence_headings)]
+                cited = set()
+                for body in bodies:
+                    for path in cited_paths(body, spec['extensions']):
+                        if path in cited:
+                            continue
+                        cited.add(path)
+                        if (target.parent / path).exists() or (project / path).exists():
+                            continue
+                        errors.append(f'C9 {rel_body}: evidence path not found: {path} '
+                                      '(expected existing repo-relative code/config path; '
+                                      'logs and external artifacts stay outside this check)')
 
             if kind == 'adr':
                 match = STATUS_LINE.search(text[:1200])

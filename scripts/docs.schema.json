@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "status": {
+    "specs": {
+      "values": ["草稿", "定稿", "弃用"]
+    },
+    "issues": {
+      "values": ["待实施", "实施中", "已验证", "阻塞", "已放弃"]
+    },
+    "adr": {
+      "values": ["提议", "采纳", "弃用"],
+      "supersede": true
+    },
+    "changes": {
+      "values": ["提案", "已应用", "已归档"]
+    }
+  },
+  "sections": {
+    "specs": ["背景与目标", "范围", "非目标", "用户故事", "实施决策", "测试决策", "未决与阻塞", "验收标准"],
+    "issues": ["依据", "范围与非目标", "依赖", "交付", "验证", "证据"],
+    "adr": ["背景", "选项", "决定", "后果", "确认方式", "相关"],
+    "changes": ["动机", "范围", "非目标", "受影响规格", "验证与回滚"]
+  },
+  "evidence": {
+    "sections": {
+      "issues": ["依据", "证据"],
+      "reviews": ["Correctness", "Standards", "Spec"]
+    },
+    "extensions": [
+      "py", "js", "mjs", "cjs", "ts", "tsx", "jsx", "vue", "svelte",
+      "go", "rs", "java", "kt", "rb", "php", "cs", "swift", "dart", "lua",
+      "c", "h", "cc", "cpp", "hpp", "m", "sql", "sh", "bash", "zsh",
+      "yml", "yaml", "toml", "json", "ini", "cfg", "conf", "env"
+    ]
+  }
+}

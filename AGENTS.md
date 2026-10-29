@@ -18,4 +18,4 @@
 
 产物约定见ARTIFACTS.md；方案见DESIGN.md；评估口径见docs/evaluation.md。
 
-文档契约分档：`docs.profile` = `off`/`light`/`strict`（缺省 light）。`scripts/check-docs.py` 只读校验命名、编号、状态词、引用与索引，非零退出表示有错；`scripts/gen-docs-index.py` 生成 `docs/INDEX.md`。未启用 strict 不校验必填小节，也不得宣称格式已强制。
+文档契约分档：`docs.profile` = `off`/`light`/`strict`（缺省 light）。`scripts/check-docs.py` 只读校验命名、编号、状态词、引用、证据路径与索引，非零退出表示有错；枚举与小节的唯一定义在 `scripts/docs.schema.json`。`scripts/gen-docs-index.py` 生成 `docs/INDEX.md`。未启用 strict 不校验必填小节，也不得宣称格式已强制。
