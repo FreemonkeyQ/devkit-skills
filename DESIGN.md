@@ -35,7 +35,7 @@ metadata的effects描述docs/prototype/tests/business-code/install能力；expli
 
 ## 任务路径
 - 小明确改动：build→review→done，不必grill/spec/issues。
-- 模糊功能：grill→plan（按规模）→build→test/browser（按风险）→review→done。
+- 模糊功能：grill→plan（按规模）→build→test/browser（按风险）→review→done；test发现实现缺陷且本次已有实施授权时回build最小修复→复测，2轮未果交debug。
 - 大迁移：research/arch migrate→plan→build分批，兼容/验证/回滚；arch不直接执行。
 - 报错只诊断：debug→证据与缺口；要求修复才修改。
 - 提交：commit分批，保留无关文件和staged hunk；不默认push。
