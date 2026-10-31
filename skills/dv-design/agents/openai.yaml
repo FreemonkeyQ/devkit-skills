@@ -1,5 +1,5 @@
 interface:
   display_name: dv-design
-  short_description: 界面视觉交互设计
+  short_description: 界面视觉与改版设计
 policy:
   allow_implicit_invocation: true

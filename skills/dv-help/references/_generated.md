@@ -12,7 +12,7 @@
 | dv-commit | 按功能规范本地提交 | docs | commit | dv-push |
 | dv-context | 接入配置与路径核对 | docs | 依任务范围 | — |
 | dv-debug | 基于证据诊断修复 | docs, tests, business-code | 依任务范围 | dv-review, dv-done |
-| dv-design | 界面视觉交互设计 | docs, prototype | 依任务范围 | dv-build, dv-browser |
+| dv-design | 界面视觉与改版设计 | docs, prototype | 依任务范围 | dv-build, dv-browser |
 | dv-done | 验证汇报与可选发布验收 | docs | 依任务范围 | dv-commit, dv-push |
 | dv-grill | 澄清需求与记录决定 | docs | 依任务范围 | dv-plan, dv-design |
 | dv-help | 查询技能和推荐用法 | 只读说明 | 依任务范围 | — |

@@ -36,7 +36,7 @@
 
     {"id": "P-design-1", "type": "positive", "primary": "dv-design", "want": ["dv-design"], "prompt": "这个列表页的空状态和加载失败怎么设计"},
     {"id": "P-design-2", "type": "positive", "primary": "dv-design", "want": ["dv-design"], "prompt": "注册流程的交互稿帮我定一下，包括错误提示和动效"},
-    {"id": "P-design-3", "type": "positive", "primary": "dv-design", "want": ["dv-design"], "prompt": "给这个后台页面出一版结构和状态设计，交给前端实现"},
+    {"id": "P-design-3", "type": "positive", "primary": "dv-design", "want": ["dv-design"], "prompt": "整个后台视觉想统一重做，现有页面要合并，先出设计方向和页面整合清单"},
 
     {"id": "P-done-1", "type": "positive", "primary": "dv-done", "want": ["dv-done"], "prompt": "这个需求做完了吗，帮我核对一下证据和缺口"},
     {"id": "P-done-2", "type": "positive", "primary": "dv-done", "want": ["dv-done"], "prompt": "发布前验收一下，确认导出的文件真的能打开"},
