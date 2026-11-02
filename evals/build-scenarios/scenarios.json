@@ -136,6 +136,48 @@
         {"type": "response_contains_any", "patterns": ["冲突", "不一致", "两种", "混合"]},
         {"type": "response_or_diff_contains", "pattern": "orders_to_csv"}
       ]
+    },
+    {
+      "id": "S9-fullstack-backend-filter",
+      "fixture": "fullstack-orders",
+      "permission": "acceptEdits",
+      "expected_skills": ["dv-build"],
+      "prompt": "订单列表要支持按客户名和状态筛选，分页和返回结构保持现有约定。数据量上来后列表变慢，顺手把查询里的性能问题处理掉。只改后端。",
+      "expectations": [
+        "按客户名和状态组合筛选，分页 total/next_offset 正确",
+        "复用 OrderRepository.get_items_many 批量取订单项，不在循环里逐单查询",
+        "沿用 PageResponse 返回结构，不新增依赖，不改前端"
+      ],
+      "checks": [
+        {"type": "manifest_unchanged", "paths": ["backend/pyproject.toml"]},
+        {"type": "changed_files_max", "value": 4},
+        {"type": "changed_files_prefix", "prefixes": ["backend/"]},
+        {"type": "hidden_tests", "suite": "fullstack-orders/backend",
+         "copy_to": "backend/tests_hidden", "cwd": "backend",
+         "command": ["python3", "-m", "unittest", "discover", "-s", "tests_hidden", "-v"],
+         "timeout": 120}
+      ]
+    },
+    {
+      "id": "S10-fullstack-frontend-states",
+      "fixture": "fullstack-orders",
+      "permission": "acceptEdits",
+      "expected_skills": ["dv-build"],
+      "prompt": "订单列表页加客户名搜索和状态筛选，并补齐加载、空、错误三种状态。沿用现有组件、样式和测试入口，不新增依赖。",
+      "expectations": [
+        "客户名搜索与状态筛选可组合使用",
+        "viewState 区分 loading/error/empty/ready，空结果不显示成 ready",
+        "复用 ui.js 的 formatDate/escapeHtml，不新增依赖，保留 aria-live"
+      ],
+      "checks": [
+        {"type": "manifest_unchanged", "paths": ["frontend/package.json"]},
+        {"type": "changed_files_max", "value": 4},
+        {"type": "changed_files_prefix", "prefixes": ["frontend/"]},
+        {"type": "hidden_tests", "suite": "fullstack-orders/frontend",
+         "copy_to": "frontend/tests_hidden", "cwd": "frontend",
+         "command": ["node", "--test", "tests_hidden/*.test.mjs"],
+         "timeout": 120}
+      ]
     }
   ],
   "negative_routes": [

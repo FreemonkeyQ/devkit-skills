@@ -60,6 +60,13 @@ build/test/reference覆盖Java Python Go JS/TS和Electron，但不能保证替�
 安全、性能与发布验收按授权环境；缺框架/目标OS/CI权限要报告，不凭工具名字制造通过。
 不依赖specific general-purpose代理名；review/audit/research的只读分析可并行，须固定同一快照、隔离写入、主流程复核汇总；宿主无并行入口时串行降级。build/debug/browser等共享写入或环境的场景默认串行。upgrade使用各宿主CLI与内容摘要校验；Claude同版本拒绝更新时备份后同步，Windows路径未实测。CodeGraph仅在项目已索引且项目约定适用时使用。
 
+## 2026-11-02 全栈 A/B pilot
+- 新增 `fullstack-orders` fixture 与 S9/S10：后端筛选/批量取项，前端筛选/四态/复用工具。
+- 3 臂 × 2 任务 × 3 次（Claude Code 2.1.267 / deepseek[1m]）：隐藏验收三臂均 3/3；S10 三臂都因改动 backend 触发 scope 失败。
+- 显式 `dv-build` 只增加成本：S9 耗时 +36%、输出 token +106%；S10 耗时 +54%、token +61%；没有功能增益。
+- natural 两轮共 12 次运行 0 次 Skill 调用；改 description 后词法 top1 已是 `dv-build`，宿主仍不调用。结论：该宿主/模型下 description 不足以保证自然触发，`dv-build` 不作为默认自动触发承诺，保留显式点名与 route 链路。
+- S9 基线全过，存在天花板；pilot 不支持“简单前后端任务默认启用有必要”，只支持高风险/复杂任务的显式护栏假设。
+
 ## 支持与验证口径
 Claude/Codex/Qoder调用元数据分别验证。openai.yaml只说明Codex策略，user-invocable不是禁止隐式调用，Qoder未知能力不作结论。
 当前版本不自动安装、不改全局、不提交本仓库、不实地push/deploy。

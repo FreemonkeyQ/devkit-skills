@@ -257,6 +257,20 @@ def run_checks(
                     f"changed files: {len(changed_files)} {changed_files}",
                 )
             )
+        elif kind == "changed_files_prefix":
+            prefixes = spec["prefixes"]
+            outside = [
+                path
+                for path in changed_files
+                if not any(path.startswith(prefix) for prefix in prefixes)
+            ]
+            results.append(
+                check(
+                    f"{kind}:{prefixes}",
+                    not outside,
+                    f"outside scope: {outside}" if outside else "",
+                )
+            )
         elif kind == "no_unverified_perf_claim":
             claim = re.search(r"性能(?:提升|改善|优化了|快了)", text)
             hedge = re.search(
@@ -272,6 +286,32 @@ def run_checks(
                     "unverified performance claim" if not ok else "",
                 )
             )
+        elif kind == "hidden_tests":
+            suite = HERE / "hidden" / spec["suite"]
+            target = dest / spec["copy_to"]
+            timeout = int(spec.get("timeout", 120))
+            cwd = dest / spec.get("cwd", ".")
+            try:
+                if target.exists():
+                    shutil.rmtree(target)
+                shutil.copytree(suite, target)
+                proc = subprocess.run(
+                    spec["command"],
+                    cwd=cwd,
+                    capture_output=True,
+                    text=True,
+                    timeout=timeout,
+                )
+                detail = (proc.stdout + proc.stderr)[-2000:]
+                results.append(
+                    check(f"{kind}:{spec['suite']}", proc.returncode == 0, detail)
+                )
+            except subprocess.TimeoutExpired:
+                results.append(
+                    check(f"{kind}:{spec['suite']}", False, f"timeout after {timeout}s")
+                )
+            finally:
+                shutil.rmtree(target, ignore_errors=True)
         else:
             results.append(check(f"{kind}:unknown", False, "unknown check type"))
     return results

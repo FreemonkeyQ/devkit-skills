@@ -56,7 +56,60 @@ python3 evals/build-scenarios/run.py --scenario S6-small-change-overhead --runs 
 
 ## 判定
 
-每个场景有确定性检查（diff/文件数/依赖是否变化/响应关键词）和可选 LLM 评审（按 `expectations` 逐条判）。确定性检查通过不等于任务成功；必须同时看 diff 和 trace。
+每个场景有确定性检查（diff/文件数/依赖是否变化/响应关键词）、可选隐藏测试和可选 LLM 评审（按 `expectations` 逐条判）。确定性检查通过不等于任务成功；必须同时看 diff 和 trace。
+
+`hidden_tests` 会把 `hidden/<suite>` 复制到临时仓库的 `copy_to` 目录，运行 `command` 后删除；隐藏测试不在发给模型的 prompt 或 fixture 中，避免答案泄漏。
+
+## 前后端 A/B pilot
+
+`fullstack-orders` 是新增的离线全栈 fixture：后端 Python 标准库、前端 vanilla JS + Node 内置 test，不需要安装依赖。S9/S10 分别覆盖：
+
+- S9 后端：按客户名 + 状态筛选，修复循环内逐单查询，保持分页结构。
+- S10 前端：客户名搜索 + 状态筛选，补齐 loading/error/empty/ready 四态，复用现有日期/转义工具。
+
+三臂对照：
+
+```bash
+# 基线：不加载插件，禁用所有技能
+python3 evals/build-scenarios/run.py --scenario S9-fullstack-backend-filter \
+  --scenario S10-fullstack-frontend-states --runs 3 --no-plugin --arm fullstack-no-skill
+
+# 自然触发：加载插件，使用原始 prompt
+python3 evals/build-scenarios/run.py --scenario S9-fullstack-backend-filter \
+  --scenario S10-fullstack-frontend-states --runs 3 --arm fullstack-natural
+
+# 技能体：加载插件并显式要求使用 dv-build
+python3 evals/build-scenarios/run.py --scenario S9-fullstack-backend-filter \
+  --scenario S10-fullstack-frontend-states --runs 3 --explicit-skill --arm fullstack-explicit
+```
+
+### 2026-11-02 结果
+
+Claude Code 2.1.267 / `deepseek[1m]`，每臂每任务 3 次：
+
+| 臂 | S9 隐藏/全部 | S10 隐藏/全部 | S9 文件/耗时/token | S10 文件/耗时/token | 技能调用 |
+|---|---|---|---|---|---|
+| no-skill | 3/3, 3/3 | 3/3, 0/3 | 2.7 / 60.3s / 1,877 | 5.7 / 97.7s / 11,910 | 0 |
+| natural | 3/3, 3/3 | 3/3, 0/3 | 2.3 / 62.0s / 1,660 | 6.0 / 89.8s / 11,116 | 0 |
+| explicit | 3/3, 3/3 | 3/3, 0/3 | 2.0 / 82.1s / 3,866 | 5.0 / 150.2s / 19,120 | 3 |
+
+- 隐藏验收三臂完全一致；S10 的“全部检查”失败来自 `changed_files_max` 和 `changed_files_prefix`，三臂都把 backend 一起改了。
+- 显式 `dv-build` 只增加成本：S9 耗时 +36%/token +106%，S10 耗时 +54%/token +61%。
+- natural 臂两轮共 12 次运行 0 次 Skill 调用。改 description 后词法 top1 已是 `dv-build`（S9 0.189、S10 0.252），宿主仍不调用；该宿主/模型下 description 不足以保证自然触发。
+- S9 基线全过，存在天花板；本 pilot 不支持“简单前后端任务默认启用有必要”，只支持高风险/复杂任务的显式护栏假设。
+
+判定口径：隐藏测试通过率是主指标；关键违规、改动文件数、工具调用、耗时和输出 token 是辅助指标。`explicit ≈ no-skill` 表示技能体没有质量收益；`natural < no-skill` 表示触发是主要成本；只有 `explicit > no-skill` 才说明技能体改善了任务。
+
+pilot 默认每个场景跑 3 次，只能看方向；要证明小差异需要更多任务和重复次数。
+
+结果汇总：
+
+```bash
+python3 evals/build-scenarios/compare.py \
+  evals/build-scenarios/results/<no-skill-dir> \
+  evals/build-scenarios/results/<natural-dir> \
+  evals/build-scenarios/results/<explicit-dir>
+```
 
 ## 结论（最新一轮，2026-10-26）
 

@@ -19,6 +19,8 @@ CHECK_TYPES = {
     "diff_not_contains",
     "manifest_unchanged",
     "changed_files_max",
+    "changed_files_prefix",
+    "hidden_tests",
     "no_unverified_perf_claim",
 }
 PERMISSIONS = {"plan", "acceptEdits"}
@@ -38,7 +40,7 @@ class BuildEvaluationMaterialTests(unittest.TestCase):
 
     def test_scenarios_are_well_formed(self):
         self.assertEqual(self.data["version"], 1)
-        self.assertEqual(len(self.scenarios), 8)
+        self.assertEqual(len(self.scenarios), 10)
         ids = [scenario["id"] for scenario in self.scenarios]
         self.assertEqual(len(ids), len(set(ids)))
         for scenario in self.scenarios:
@@ -71,6 +73,22 @@ class BuildEvaluationMaterialTests(unittest.TestCase):
                     elif kind == "changed_files_max":
                         self.assertIsInstance(check["value"], int)
                         self.assertGreaterEqual(check["value"], 0)
+                    elif kind == "changed_files_prefix":
+                        self.assertTrue(check["prefixes"])
+                        self.assertTrue(
+                            all(isinstance(item, str) and item.strip()
+                                for item in check["prefixes"])
+                        )
+                    elif kind == "hidden_tests":
+                        suite = BASE / "hidden" / check["suite"]
+                        self.assertTrue(suite.is_dir(), suite)
+                        self.assertTrue(check["copy_to"])
+                        self.assertTrue(check["command"])
+                        self.assertTrue(
+                            all(isinstance(item, str) and item.strip()
+                                for item in check["command"])
+                        )
+                        self.assertIsInstance(check.get("timeout", 120), int)
                     elif kind == "response_contains_any":
                         self.assertTrue(check["patterns"])
                         self.assertTrue(
@@ -97,6 +115,7 @@ class BuildEvaluationMaterialTests(unittest.TestCase):
     def test_runner_and_routing_scripts_exist(self):
         self.assertTrue((BASE / "run.py").is_file())
         self.assertTrue((BASE / "route.py").is_file())
+        self.assertTrue((BASE / "compare.py").is_file())
         self.assertTrue((BASE / "README.md").is_file())
 
     def test_no_plugin_arm_flags(self):

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>订单列表</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main>
+      <h1>订单</h1>
+      <div class="filters">
+        <label>客户 <input id="customer" type="search" /></label>
+        <label>
+          状态
+          <select id="status">
+            <option value="">全部</option>
+            <option value="PAID">已支付</option>
+            <option value="SHIPPED">已发货</option>
+            <option value="CANCELLED">已取消</option>
+          </select>
+        </label>
+      </div>
+      <div id="orders-state" class="state" aria-live="polite"></div>
+      <table>
+        <thead>
+          <tr><th>编号</th><th>客户</th><th>状态</th><th>日期</th></tr>
+        </thead>
+        <tbody id="orders-body"></tbody>
+      </table>
+    </main>
+    <script type="module" src="./app-entry.js"></script>
+  </body>
+</html>

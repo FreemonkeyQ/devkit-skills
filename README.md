@@ -89,6 +89,8 @@ claude plugin details devkit-skills      # 方式一：Skills (19) 且列出 dv-
 
 ## 怎么用
 
+> 自然触发不稳定：2026-11-02 全栈 pilot 中，实现类 prompt 12 次自然运行 0 次调用 `dv-build`。需要它的约束时，显式说「用 dv-build」或「根据 dv Skill 执行」；不要把未自动调用当成技能不存在。
+
 | 你说 | 推荐路径 | 边界 |
 |---|---|---|
 | 按 dv Skills 执行 / 一直做到 done | route 逐步或目标模式 → … → done | 先确认链路与闸门；不自动 commit/push |
