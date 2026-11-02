@@ -271,6 +271,16 @@ class SkillContractTests(unittest.TestCase):
         self.assertEqual(fm['metadata']['explicit-actions'],['install'])
         for word in ('备份','不授权commit/push','重启','--check','--apply'):
             self.assertIn(word,body)
+    def test_chain_handoff_contract(self):
+        records={fm['name']:(fm,body) for _,fm,body in catalog()}
+        for name,(_,body) in records.items():
+            self.assertIn('## 技能交接',body,name)
+        route=records['dv-route'][1]
+        for word in ('逐步模式','目标模式','停车闸门','references/chain.md'):
+            self.assertIn(word,route)
+        chain=(ROOT/'skills/dv-route/references/chain.md').read_text(encoding='utf-8')
+        for word in ('三行交接','终点解释','停车闸门','force','merge','部署'):
+            self.assertIn(word,chain)
     def test_evaluation_fixtures(self):
         cases=json.loads((ROOT/'evals/scenarios.json').read_text())['cases']
         self.assertEqual(len(cases),10)

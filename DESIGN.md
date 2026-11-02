@@ -34,6 +34,9 @@ metadata的effects描述docs/prototype/tests/business-code/install能力；expli
 重要新设计、范围变化、不可逆数据操作、生产写入/审批、Git提交推送按实际影响确认，不每个阶段机械STOP。已有明确授权不重复确认，环境权限限制绝不绕过。upgrade只动本机devkit安装，同版本内容同步先备份，不隐含commit/push或发布授权。
 
 ## 任务路径
+- 逐步模式（默认）：每个技能收尾给“已完成/建议下一步/需决定”三行；用户确认后直接调用下一步，不重复完整侦察。
+- 目标模式：用户声明“根据 dv Skills 执行”“一直做到 done/push”时，route 先给起点→终点、技能序列、停车闸门与授权范围，确认后连续执行；终点未写 Git 动作不 commit/push，不隐含 force/merge/PR/部署。
+- 停车闸门：范围变化、未定决策、不可逆或共享副作用、Git 动作超出终点、失败或阻塞；普通测试失败在已有实施授权内按 test 修复回路处理。
 - 小明确改动：build→review→done，不必grill/spec/issues。
 - 模糊功能：grill→plan（按规模）→build→test/browser（按风险）→review→done；test发现实现缺陷且本次已有实施授权时回build最小修复→复测，2轮未果交debug。
 - 大迁移：research/arch migrate→plan→build分批，兼容/验证/回滚；arch不直接执行。
@@ -46,7 +49,7 @@ metadata的effects描述docs/prototype/tests/business-code/install能力；expli
 
 ## 工具与产物
 见ARTIFACTS；配置固定项目.devkit/config.json，其他产物路径可覆盖，工具resolve防越界和外部symlink。
-next为建议图而非执行状态机；cycles合法，目标必须存在。
+next为候选图而非执行状态机，链路推进只由用户确认或声明终点触发；cycles合法，目标必须存在。
 help生成检查不写入；lint校验YAML类型、字段、引用、调用策略对齐。文字预算超限仅warning，静态检查不证明实际行为。
 link仅Claude/Qoder本地目录，不覆盖外来链接；check无写入、卸载仅自有。
 optional hook读取配置state，不写、不把游标变权限。稳定一行提示，无时长与循环计数；没有实现“3轮/10轮”稀疏策略，不承诺它。

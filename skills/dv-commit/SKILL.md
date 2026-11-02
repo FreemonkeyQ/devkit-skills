@@ -28,5 +28,8 @@ metadata:
 6. 提交前查看staged diff和秘密风险；不靠`--no-verify`绕过失败hook。失败保留内容与stage状态，报告原因不擅自改依赖/规范。无改动不创建空提交，不默认amend/rebase/squash历史。
 7. 记录每个SHA、标题、验证、未提交范围；状态可标committed，不能标pushed。只本地commit，不push/merge/deploy/worktree清理。
 
+## 技能交接
+收尾给三行：已完成；建议下一步（有 metadata.next 时选 1 个默认，可附 1 个备选）；需用户决定的事。用户确认即直接调用下一步，不重复完整侦察；目标式委托与停车闸门见 dv-route 的链路模式。
+
 ## 自检
 每批可理解可回滚；已暂存无关内容未混入；消息不夸大修复或测试；用户只要草稿时绝不stage/commit。操作可能更新Git索引，不能声称完全不动stage；说明实际结果。

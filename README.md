@@ -91,6 +91,8 @@ claude plugin details devkit-skills      # 方式一：Skills (19) 且列出 dv-
 
 | 你说 | 推荐路径 | 边界 |
 |---|---|---|
+| 按 dv Skills 执行 / 一直做到 done | route 逐步或目标模式 → … → done | 先确认链路与闸门；不自动 commit/push |
+| 一直做到 done push | route 目标模式 → … → done → commit → push | 仅终点声明才推送；不含 force/merge/PR/部署 |
 | 想加导出，但字段没想清 | grill → plan（必要时） | 只澄清不自动开工 |
 | 按已确认方案实现 | build → review → done | 不自动 commit/push |
 | 旧项目加接口/导出/改实现 | build（先侦察与复用）→ review → done | 不自动全量扫描，不新建同类轮子 |
@@ -114,7 +116,7 @@ claude plugin details devkit-skills      # 方式一：Skills (19) 且列出 dv-
 - 测试/验收：dv-test、dv-audit、dv-browser、dv-review
 - 交付：dv-done、dv-commit、dv-push
 
-完整生成表见 [dv-help](skills/dv-help/references/_generated.md)。`next` 仅表示可选关联，不是强制执行序列。
+完整生成表见 [dv-help](skills/dv-help/references/_generated.md)。`next` 是候选图，不是强制执行序列；逐步模式确认后才推进，目标模式只在声明终点内连续执行。
 
 没有必要为了一个小改动制造 spec、issue、ADR。现有仓库规范优先；自然语言可以明确只分析、记录、执行或限制范围。
 

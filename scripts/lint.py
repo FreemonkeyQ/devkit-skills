@@ -34,6 +34,12 @@ def check(root=ROOT):
         for word in ('适用', '不适用', '自检'):
             if word not in body:
                 errors.append(f'{name}: missing {word}')
+        if '## 技能交接' not in body:
+            errors.append(f'{name}: missing ## 技能交接')
+        if name == 'dv-route':
+            for word in ('逐步模式', '目标模式', '停车闸门', 'references/chain.md'):
+                if word not in body:
+                    errors.append(f'{name}: missing chain contract word {word}')
         meta = fm.get('metadata')
         if not isinstance(meta, dict):
             errors.append(f'{name}: metadata must be object')
