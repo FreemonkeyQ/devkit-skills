@@ -36,7 +36,7 @@ def aggregate(rows: list[dict]) -> list[dict]:
             check
             for item in items
             for check in item.get("checks", [])
-            if check["check"].startswith("hidden_tests:")
+            if check["check"].startswith(("hidden_tests:", "hidden_files:"))
         ]
         result.append(
             {
@@ -44,7 +44,9 @@ def aggregate(rows: list[dict]) -> list[dict]:
                 "scenario": scenario,
                 "runs": runs,
                 "task_pass": sum(
-                    item.get("checks_passed", 0) == item.get("checks_total", 0)
+                    item.get("checks_total", 0) > 0
+                    and not item.get("error")
+                    and item.get("checks_passed", 0) == item.get("checks_total", 0)
                     for item in items
                 ),
                 "hidden_pass": sum(check["pass"] for check in hidden),

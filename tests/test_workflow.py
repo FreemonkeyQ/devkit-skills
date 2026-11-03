@@ -118,6 +118,16 @@ class RunTests(unittest.TestCase):
         self.assertTrue(plan["authorization"]["commit"])
         self.assertTrue(plan["authorization"]["push"])
 
+    def test_init_excludes_run_artifacts_in_git(self):
+        (self.root / ".git/info").mkdir(parents=True)
+        self.init(run_id="r8")
+        exclude = (self.root / ".git/info/exclude").read_text()
+        self.assertIn(".devkit/runs/", exclude.splitlines())
+        devkit_run.ensure_runs_excluded(self.root)
+        self.assertEqual(
+            (self.root / ".git/info/exclude").read_text().count(".devkit/runs/"), 1
+        )
+
     def test_note_appends_context(self):
         directory = self.init(run_id="r7")
         context = json.loads((directory / "context.json").read_text())

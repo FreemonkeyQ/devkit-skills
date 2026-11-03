@@ -5,6 +5,9 @@ import sys
 import unittest
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "evals" / "build-scenarios"))
+import compare  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / "evals" / "build-scenarios"
 SCENARIOS = BASE / "scenarios.json"
@@ -161,6 +164,27 @@ class BuildEvaluationMaterialTests(unittest.TestCase):
         )
         self.assertEqual(dry.returncode, 0, dry.stderr)
         self.assertIn("S1-reuse-csv-export", dry.stdout)
+
+    def test_compare_does_not_treat_timeout_as_pass(self):
+        rows = compare.aggregate([
+            {
+                "arm": "a", "scenario": "x", "checks_passed": 0, "checks_total": 0,
+                "changed_files": [], "tool_calls": 0, "duration_s": 0,
+                "usage": {}, "skill_invocations": [], "error": "TimeoutExpired",
+            }
+        ])
+        self.assertEqual(rows[0]["task_pass"], 0)
+
+    def test_compare_counts_hidden_files_checks(self):
+        rows = compare.aggregate([
+            {
+                "arm": "a", "scenario": "x", "checks_passed": 1, "checks_total": 1,
+                "changed_files": [], "tool_calls": 0, "duration_s": 0,
+                "usage": {}, "skill_invocations": [], "error": None,
+                "checks": [{"check": "hidden_files:[...]", "pass": True}],
+            }
+        ])
+        self.assertEqual((rows[0]["hidden_pass"], rows[0]["hidden_total"]), (1, 1))
 
     def test_results_are_gitignored(self):
         if not (ROOT / ".git").is_dir():

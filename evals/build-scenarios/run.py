@@ -191,10 +191,11 @@ def parse_stream(stdout: str) -> tuple[str, list[dict], dict, dict]:
 
 def collect_diff(dest: Path) -> tuple[str, list[str]]:
     git(dest, "add", "-A")
-    diff = git(dest, "diff", "--cached", "--binary").stdout
+    pathspec = [".", ":(exclude).devkit/runs"]
+    diff = git(dest, "diff", "--cached", "--binary", *pathspec).stdout
     names = [
         line
-        for line in git(dest, "diff", "--cached", "--name-only").stdout.splitlines()
+        for line in git(dest, "diff", "--cached", "--name-only", *pathspec).stdout.splitlines()
         if line.strip()
     ]
     return diff, names

@@ -122,6 +122,7 @@ def main() -> int:
     parser.add_argument("--arms", default=",".join(name for name, _ in ARMS))
     parser.add_argument("--tasks", default=",".join(task["name"] for task in TASKS))
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--report-only", action="store_true")
     args = parser.parse_args()
     models = [item.strip() for item in args.models.split(",") if item.strip()]
     arms = [item.strip() for item in args.arms.split(",") if item.strip()]
@@ -140,12 +141,14 @@ def main() -> int:
             print(" ".join(command(task, arm, model, args.runs, args.timeout)))
         return 0
     started = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    with ThreadPoolExecutor(max_workers=args.workers) as pool:
-        futures = [
-            pool.submit(run_cell, task, arm, model, args.runs, args.timeout, env)
-            for task, arm, model in cells
-        ]
-        results = [future.result() for future in as_completed(futures)]
+    results = []
+    if not args.report_only:
+        with ThreadPoolExecutor(max_workers=args.workers) as pool:
+            futures = [
+                pool.submit(run_cell, task, arm, model, args.runs, args.timeout, env)
+                for task, arm, model in cells
+            ]
+            results = [future.result() for future in as_completed(futures)]
     failures = [item for item in results if item[3] != 0]
     dirs = result_dirs()
     rows = compare.aggregate(compare.load_runs([str(path) for path in dirs]))

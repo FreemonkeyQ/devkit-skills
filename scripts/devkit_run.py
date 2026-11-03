@@ -88,9 +88,31 @@ def steps_for(risk: str, endpoint: str, adapter: dict) -> list[dict]:
     return plan
 
 
+def ensure_runs_excluded(root: Path) -> None:
+    """Keep run artifacts out of Git without changing a tracked .gitignore."""
+    git_dir = root / ".git"
+    if git_dir.is_file():
+        text = git_dir.read_text(encoding="utf-8").strip()
+        if text.startswith("gitdir:"):
+            git_dir = (root / text.split(":", 1)[1].strip()).resolve()
+    if not git_dir.is_dir():
+        return
+    exclude = git_dir / "info" / "exclude"
+    line = ".devkit/runs/"
+    existing = exclude.read_text(encoding="utf-8") if exclude.is_file() else ""
+    if line in existing.splitlines():
+        return
+    exclude.parent.mkdir(parents=True, exist_ok=True)
+    with exclude.open("a", encoding="utf-8") as handle:
+        if existing and not existing.endswith("\n"):
+            handle.write("\n")
+        handle.write(f"{line}\n")
+
+
 def init_run(args) -> int:
     root = args.root.resolve()
     adapter = load_adapter(root)
+    ensure_runs_excluded(root)
     scope = [
         part.strip()
         for item in (args.scope or [])
