@@ -287,6 +287,12 @@ class SkillContractTests(unittest.TestCase):
         chain=(ROOT/'skills/dv-route/references/chain.md').read_text(encoding='utf-8')
         for word in ('三行交接','终点解释','停车闸门','force','merge','部署','plan.json','acceptance.json','devkit_gates.py','快路径'):
             self.assertIn(word,chain)
+    def test_help_usage_cheatsheet(self):
+        records={fm['name']:(fm,body) for _,fm,body in catalog()}
+        self.assertIn('references/usage.md',records['dv-help'][1])
+        usage=(ROOT/'skills/dv-help/references/usage.md').read_text(encoding='utf-8')
+        for word in ('一句话判据','值得用','没必要用','失败代价','自然触发','默认姿势'):
+            self.assertIn(word,usage)
     def test_evaluation_fixtures(self):
         cases=json.loads((ROOT/'evals/scenarios.json').read_text())['cases']
         self.assertEqual(len(cases),10)
