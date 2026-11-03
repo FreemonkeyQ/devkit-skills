@@ -139,7 +139,7 @@ def run_checks(
             copied: list[Path] = []
             try:
                 for item in spec["files"]:
-                    source = HERE / item["source"]
+                    source = HIDDEN / item["source"]
                     target = dest / item["target"]
                     target.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(source, target)

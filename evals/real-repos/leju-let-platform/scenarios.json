@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "source": "/Users/zhangxingshuai/Documents/Code/LejuSoftware/Leju-LET-Platform",
+  "base_rev": "970afb6def5aa269c9a68fe319bcf23bcb82fb22",
+  "description": "Real-repository evaluation for Leju-LET-Platform. The source is sparse-cloned to a temporary directory; hidden JUnit tests are copied in after the agent finishes.",
+  "scenarios": [
+    {
+      "id": "LET1-dept-isolation-consistency",
+      "permission": "acceptEdits",
+      "expected_skills": ["dv-build", "dv-test"],
+      "prompt": "组织隔离下 `DataIsolationUtil.setDeptIsolation(QueryWrapper)` 会同时查组织本身（type=1）和其下项目（type=2, parent_id=组织），但 `LambdaQueryWrapper` 重载只查 type=1，两个重载行为不一致。请统一 Lambda 版本，补齐子项目条件；保持 ALL/DEPARTMENT/PROJECT 和空组织回退不变。只改 `projects/backend/kuavodatahubserver/src/main/java/com/kuavo/datahub/common/tool/DataIsolationUtil.java` 及对应测试，不新增依赖。",
+      "expectations": [
+        "LambdaQueryWrapper 的 DEPARTMENT 分支同时包含 type=1 的 id 条件和 type=2 的 parent_id 条件",
+        "ALL/PROJECT 档位及空组织返回 id=-1 的行为不变",
+        "不新增依赖，不修改 pom.xml"
+      ],
+      "checks": [
+        {"type": "manifest_unchanged", "paths": ["projects/backend/kuavodatahubserver/pom.xml"]},
+        {"type": "changed_files_max", "value": 3},
+        {"type": "changed_files_prefix", "prefixes": [
+          "projects/backend/kuavodatahubserver/src/main/java/com/kuavo/datahub/common/tool/",
+          "projects/backend/kuavodatahubserver/src/test/java/com/kuavo/datahub/common/tool/"
+        ]},
+        {"type": "hidden_files",
+         "files": [{"source": "LetHiddenDeptIsolationTest.java",
+                    "target": "projects/backend/kuavodatahubserver/src/test/java/com/kuavo/datahub/common/tool/LetHiddenDeptIsolationTest.java"}],
+         "cwd": "projects/backend/kuavodatahubserver", "timeout": 240,
+         "command": ["mvn", "-q", "-Dtest=LetHiddenDeptIsolationTest", "-DfailIfNoTests=false", "test"]},
+        {"type": "command", "cwd": "projects/backend/kuavodatahubserver", "timeout": 240,
+         "command": ["mvn", "-q", "-Dtest=DataIsolationUtilTest", "-DfailIfNoTests=false", "test"]}
+      ]
+    },
+    {
+      "id": "LET2-user-project-exact-match",
+      "permission": "acceptEdits",
+      "expected_skills": ["dv-build", "dv-test"],
+      "prompt": "项目隔离下 `DataIsolationUtil.setUserIsolation(QueryWrapper)` 用 `LIKE project_id` 匹配多个项目，`proj-1` 会误命中 `proj-10`。请改为精确匹配（= 或 IN），保留空项目回退 `id=-1` 和现有组织/项目档位语义。只改 `projects/backend/kuavodatahubserver/src/main/java/com/kuavo/datahub/common/tool/DataIsolationUtil.java` 及对应测试，不新增依赖。",
+      "expectations": [
+        "项目隔离不再用 LIKE，proj-1 不会匹配 proj-10",
+        "多个项目 ID 都进入精确匹配参数，空项目仍回退 id=-1",
+        "不新增依赖，不修改 pom.xml"
+      ],
+      "checks": [
+        {"type": "manifest_unchanged", "paths": ["projects/backend/kuavodatahubserver/pom.xml"]},
+        {"type": "changed_files_max", "value": 3},
+        {"type": "changed_files_prefix", "prefixes": [
+          "projects/backend/kuavodatahubserver/src/main/java/com/kuavo/datahub/common/tool/",
+          "projects/backend/kuavodatahubserver/src/test/java/com/kuavo/datahub/common/tool/"
+        ]},
+        {"type": "hidden_files",
+         "files": [{"source": "LetHiddenUserProjectIsolationTest.java",
+                    "target": "projects/backend/kuavodatahubserver/src/test/java/com/kuavo/datahub/common/tool/LetHiddenUserProjectIsolationTest.java"}],
+         "cwd": "projects/backend/kuavodatahubserver", "timeout": 240,
+         "command": ["mvn", "-q", "-Dtest=LetHiddenUserProjectIsolationTest", "-DfailIfNoTests=false", "test"]},
+        {"type": "command", "cwd": "projects/backend/kuavodatahubserver", "timeout": 240,
+         "command": ["mvn", "-q", "-Dtest=DataIsolationUtilTest", "-DfailIfNoTests=false", "test"]}
+      ]
+    }
+  ]
+}

@@ -20,7 +20,7 @@
         {"type": "changed_files_prefix", "prefixes": ["internal/audit/"]},
         {"type": "hidden_files",
          "files": [
-           {"source": "hidden/audit/zz_hidden_sanitize_test.go",
+           {"source": "audit/zz_hidden_sanitize_test.go",
             "target": "internal/audit/zz_hidden_sanitize_test.go"}
          ],
          "cwd": ".", "timeout": 180,
@@ -45,7 +45,7 @@
         {"type": "changed_files_prefix", "prefixes": ["internal/audit/", "web/src/", "docs/guides/manual/"]},
         {"type": "hidden_files",
          "files": [
-           {"source": "hidden/client-ip/zz_hidden_client_ip_test.go",
+           {"source": "client-ip/zz_hidden_client_ip_test.go",
             "target": "internal/audit/zz_hidden_client_ip_test.go"}
          ],
          "cwd": ".", "timeout": 180,

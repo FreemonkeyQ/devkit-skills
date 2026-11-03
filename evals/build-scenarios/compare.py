@@ -15,8 +15,12 @@ def load_runs(paths: list[str]) -> list[dict]:
         summary = root / "summary.json"
         if not summary.is_file():
             raise SystemExit(f"missing {summary}")
+        meta_path = root / "meta.json"
+        arm = root.name
+        if meta_path.is_file():
+            arm = json.loads(meta_path.read_text(encoding="utf-8")).get("arm", arm)
         for record in json.loads(summary.read_text(encoding="utf-8")):
-            record["arm"] = root.name
+            record["arm"] = arm
             rows.append(record)
     return rows
 
