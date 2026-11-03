@@ -5,14 +5,14 @@
   },
   "metadata": {
     "description": "19个研发流程技能与授权边界",
-    "version": "0.4.0"
+    "version": "0.4.1"
   },
   "plugins": [
     {
       "name": "devkit-skills",
       "source": "./",
       "description": "19 engineering skills, explicit commit/push intent, CI tracking, release verification and local cross-host upgrades.",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "author": {
         "name": "devkit"
       },
@@ -29,5 +29,5 @@
       "commands": "./commands/"
     }
   ],
-  "version": "0.4.0"
+  "version": "0.4.1"
 }
