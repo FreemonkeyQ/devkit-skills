@@ -411,6 +411,16 @@ def main() -> int:
         action="store_true",
         help="do not load this plugin and disable all skills (baseline arm)",
     )
+    parser.add_argument(
+        "--chain",
+        action="store_true",
+        help="prepend a dv-route chain instruction (route/build/test/review/done)",
+    )
+    parser.add_argument(
+        "--skills",
+        default="",
+        help="comma-separated skills to invoke in order (ablation arm)",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument(
         "--model",
@@ -424,8 +434,12 @@ def main() -> int:
         help="host CLI to drive: claude (Claude Code) or qoder (Qoder CLI CN)",
     )
     args = parser.parse_args()
-    if args.no_plugin and args.explicit_skill:
-        print("--no-plugin conflicts with --explicit-skill", file=sys.stderr)
+    arm_flags = [args.no_plugin, args.explicit_skill, args.chain, bool(args.skills)]
+    if sum(bool(flag) for flag in arm_flags) > 1:
+        print(
+            "choose only one of --no-plugin, --explicit-skill, --chain, --skills",
+            file=sys.stderr,
+        )
         return 2
 
     data = load_scenarios()
@@ -475,6 +489,8 @@ def main() -> int:
         "runs_per_scenario": args.runs,
         "judge": args.judge,
         "explicit_skill": args.explicit_skill,
+        "chain": args.chain,
+        "skills_arg": args.skills,
         "no_plugin": args.no_plugin,
         "hooks_disabled": True,
         "scenarios_file_sha256": sha256(SCENARIOS),
@@ -507,7 +523,20 @@ def main() -> int:
                 )
                 started = datetime.now(timezone.utc)
                 sent_prompt = scenario["prompt"]
-                if args.explicit_skill:
+                if args.skills:
+                    sent_prompt = (
+                        f"请依次使用 {args.skills} 技能完成以下任务：\n\n"
+                        f"{sent_prompt}"
+                    )
+                elif args.chain:
+                    sent_prompt = (
+                        "请根据 dv Skill(s) 链路执行：先用 dv-route 规划，"
+                        "再用 dv-build 实现、dv-test 验证、dv-review 评审、"
+                        "dv-done 收口。用户已确认按此计划连续执行，"
+                        "不要停在计划确认；不要 commit 或 push。\n\n"
+                        f"{sent_prompt}"
+                    )
+                elif args.explicit_skill:
                     skill = (scenario.get("expected_skills") or ["dv-build"])[0]
                     sent_prompt = f"请使用 {skill} 技能完成以下任务：\n\n{sent_prompt}"
                 proc = run_claude(

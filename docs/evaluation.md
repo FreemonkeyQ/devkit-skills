@@ -11,6 +11,16 @@
 
 核心技能方法的六项定向材料见 `evals/depth-scenarios.json`，对照步骤与独立评判维度见 `evals/README.md`。任务效果、边界遵守、证据真实性分别记录；零违规不等于完成任务。新增材料未执行真实模型对照，不能声明深度改进已被实验证明。历史版本验证记录保留其原始范围，不代替当前版本证据。
 
+## 工作流基础设施验证（2026-11-03）
+
+- 静态：`scripts/lint.py`、`dv-help-gen.py --check`、`check-docs.py` 均通过。
+- 离线执行：`tests/test_workflow.py` 覆盖项目适配器检测、plan 风险/快路径、门禁 pass/fail、done fail-closed、driver 逐技能执行、入口安装；全量 `unittest` 通过。
+- 真实仓库：`devkit_context.py --root . --write` 生成 `.devkit/project.json`；`devkit_gates.py run/check` 在 devkit 仓库执行 unit/lint/help/docs 门禁并保存证据。
+- 消融：`run.py --skills` 支持 build-only、build+test、build+test+review 等臂；结果仍需真实宿主运行，不能把参数存在当模型通过。
+- 2026-11-03 S6 小改动 smoke（Claude Code / fable，1 次）：no-skill 3/3、36.7s、876 token；`--skills dv-build` 3/3、47.9s、1,782 token；`--skills dv-build,dv-test` 3/3、83.8s、3,500 token。功能检查相同，成本随技能数上升。
+- 项目适配器在 OTA clone 上识别为 mixed，门禁 `unit/lint/build/manual/docs/release`，`i18n` 因缺 `web/node_modules` 标为 optional；说明它按真实文件检测，不靠硬编码项目名。
+- 结论边界：这些验证证明基础设施可执行、能 fail closed，不证明技能在真实任务上必然提高正确率。
+
 ## 记录模板
 - 宿主/模型/版本/时间/配置（无秘密）；其他skills是否隔离。
 - 输入与允许/禁止副作用。

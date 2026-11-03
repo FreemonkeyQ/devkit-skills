@@ -178,6 +178,49 @@
          "command": ["node", "--test", "tests_hidden/*.test.mjs"],
          "timeout": 120}
       ]
+    },
+    {
+      "id": "S11-saas-billing-backend",
+      "fixture": "saas-billing",
+      "permission": "acceptEdits",
+      "expected_skills": ["dv-build", "dv-test"],
+      "prompt": "这个 SaaS 计费项目要为 2026-10 生成账单：按订阅套餐的月费和包含额度计算超额用量，金额统一用分并按四舍五入；同一租户同一账期重复执行不能重复计费；账单列表按租户隔离，支持状态和账期筛选、游标分页，用量聚合避免逐租户查询。沿用现有 schema、money 工具和 CLI 结构，只改后端，不新增依赖。",
+      "expectations": [
+        "账单金额按分计算并四舍五入，租户 1 的 subtotal/tax/total 分别为 20300/1776/22076",
+        "同一账期重复执行返回已有账单，不新增发票或明细",
+        "账单列表按租户隔离，支持状态、账期和游标分页",
+        "用量聚合使用一次分组查询，不在订阅循环里逐租户查询"
+      ],
+      "checks": [
+        {"type": "manifest_unchanged", "paths": ["backend/pyproject.toml"]},
+        {"type": "changed_files_max", "value": 8},
+        {"type": "changed_files_prefix", "prefixes": ["backend/"]},
+        {"type": "hidden_tests", "suite": "saas-billing/backend",
+         "copy_to": "backend/tests_hidden", "cwd": "backend",
+         "command": ["python3", "-m", "unittest", "discover", "-s", "tests_hidden", "-v"],
+         "timeout": 120}
+      ]
+    },
+    {
+      "id": "S12-saas-billing-dashboard",
+      "fixture": "saas-billing",
+      "permission": "acceptEdits",
+      "expected_skills": ["dv-build"],
+      "prompt": "账单仪表盘要支持按账期和状态组合筛选，展示账单总额与用量合计，并补齐加载、空、错误三种状态；金额按分显示，租户名必须转义。沿用现有 ui.js 工具和测试入口，不新增依赖。",
+      "expectations": [
+        "账期和状态可组合筛选，空结果返回 empty 而不是 ready",
+        "加载、错误、空、就绪四态优先级正确",
+        "汇总金额保持整数分，租户名转义，日期和货币复用 ui.js"
+      ],
+      "checks": [
+        {"type": "manifest_unchanged", "paths": ["frontend/package.json"]},
+        {"type": "changed_files_max", "value": 4},
+        {"type": "changed_files_prefix", "prefixes": ["frontend/"]},
+        {"type": "hidden_tests", "suite": "saas-billing/frontend",
+         "copy_to": "frontend/tests_hidden", "cwd": "frontend",
+         "command": ["node", "--test", "tests_hidden/*.test.mjs"],
+         "timeout": 120}
+      ]
     }
   ],
   "negative_routes": [

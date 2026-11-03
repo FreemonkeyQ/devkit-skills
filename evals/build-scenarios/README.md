@@ -6,8 +6,10 @@
 
 - `fixtures/legacy-java`：Spring Boot 旧项目，已有 `CsvExportWriter`、`CustomerExportService`、分页接口、N+1、深 offset 查询
 - `fixtures/legacy-py`：FastAPI 旧项目，已有 `format_dt`、`orders_to_csv`，两种 session 用法并存
+- `fixtures/fullstack-orders`：无依赖全栈项目，后端标准库、前端 vanilla JS，已有筛选/分页/状态基线
+- `fixtures/saas-billing`：带 SQLite 的多租户 SaaS 计费项目，含租户、套餐、订阅、用量、账单和仪表盘
 - `fixtures/greenfield`：空仓库
-- `scenarios.json`：8 个行为场景，prompt 与期望分离
+- `scenarios.json`：12 个行为场景，prompt 与期望分离
 - `run.py`：复制 fixture 到临时目录，用无头 Claude Code 跑 prompt，记录 trace/diff/检查
 - `route.py`：对 19 个 description 做词法 TF-IDF 的触发路由近似
 
@@ -36,12 +38,34 @@ python3 evals/build-scenarios/route.py
 python3 evals/build-scenarios/run.py --scenario S1-reuse-csv-export \
   --scenario S6-small-change-overhead --runs 3 --explicit-skill --arm with-skill
 
+# 链路臂：加载插件并按 dv-route 链路调用 build/test/review/done
+python3 evals/build-scenarios/run.py --scenario S1-reuse-csv-export \
+  --scenario S6-small-change-overhead --runs 3 --chain --arm chain
+
 # 基线臂：不加载插件，并禁用所有技能
 python3 evals/build-scenarios/run.py --scenario S1-reuse-csv-export \
   --scenario S6-small-change-overhead --runs 3 --no-plugin --arm no-skill
 ```
 
-两臂 prompt 不完全相同：技能臂多一句显式调用指令，基线臂是原始 prompt；结果用于比较技能体是否改善任务，不用于测自然触发率。`--no-plugin` 与 `--explicit-skill` 互斥。
+两臂 prompt 不完全相同：技能臂多一句显式调用指令，基线臂是原始 prompt；结果用于比较技能体是否改善任务，不用于测自然触发率。`--no-plugin`、`--explicit-skill`、`--chain`、`--skills` 四者互斥。`--chain` 测的是 route 编排后的多技能链路，不是单个技能体。
+
+消融臂：
+
+```bash
+# 只测 build
+python3 evals/build-scenarios/run.py --scenario S9-fullstack-backend-filter \
+  --runs 2 --skills dv-build --arm ablation-build
+
+# 测 build+test，判断 test 的增量
+python3 evals/build-scenarios/run.py --scenario S9-fullstack-backend-filter \
+  --runs 2 --skills dv-build,dv-test --arm ablation-build-test
+
+# 测 build+test+review，判断 review 的增量
+python3 evals/build-scenarios/run.py --scenario S9-fullstack-backend-filter \
+  --runs 2 --skills dv-build,dv-test,dv-review --arm ablation-build-test-review
+```
+
+消融结果按 `compare.py` 汇总；只有 `build+test` 明显优于 `build-only`，才说明 test 有独立价值。
 
 指定宿主与模型（不传则用宿主默认）：
 
@@ -111,6 +135,51 @@ python3 evals/build-scenarios/compare.py \
   evals/build-scenarios/results/<explicit-dir>
 ```
 
+## SaaS 计费 A/B
+
+`saas-billing` 是带 SQLite 的多租户计费项目：后端标准库 + `sqlite3`，前端 vanilla JS + Node 内置 test，无需安装依赖。S11/S12 分别覆盖：
+
+- S11 后端：按套餐月费/包含额度/超额微单价生成 2026-10 账单；金额按分四舍五入；重复执行幂等；列表租户隔离、状态/账期筛选、游标分页；用量聚合不逐租户查询。
+- S12 前端：账期 + 状态组合筛选；总额与用量汇总；loading/error/empty/ready 四态；整数分金额与租户名转义。
+
+fixture 基线保留了真实遗留缺陷：超额金额截断、税额浮点截断、重复执行撞唯一键、`get_invoice` 跨租户泄漏、列表无筛选/游标、前端无空态/账期筛选/转义。隐藏测试分别覆盖这些点，并会重跑 fixture 自带测试防止回归。
+
+```bash
+# 基线：不加载插件，禁用所有技能
+python3 evals/build-scenarios/run.py --scenario S11-saas-billing-backend \
+  --scenario S12-saas-billing-dashboard --runs 2 --timeout 900 \
+  --no-plugin --arm saas-no-skill
+
+# 自然触发：加载插件，使用原始 prompt
+python3 evals/build-scenarios/run.py --scenario S11-saas-billing-backend \
+  --scenario S12-saas-billing-dashboard --runs 2 --timeout 900 \
+  --arm saas-natural
+
+# 链路：加载插件，显式要求 dv-route 编排 build/test/review/done
+python3 evals/build-scenarios/run.py --scenario S11-saas-billing-backend \
+  --scenario S12-saas-billing-dashboard --runs 2 --timeout 900 \
+  --chain --arm saas-chain
+```
+
+判定仍以隐藏测试通过率为主；`changed_files_prefix` 强制 S11 只改 `backend/`、S12 只改 `frontend/`，`manifest_unchanged` 防止新增依赖。
+
+### 2026-11-02 结果
+
+Claude Code 2.1.267 / `deepseek[1m]`，每臂每任务 2 次：
+
+| 臂 | S11 任务/隐藏 | S12 任务/隐藏 | S11 文件/工具/耗时/token | S12 文件/工具/耗时/token | 技能调用 |
+|---|---|---|---|---|---|
+| no-skill | 2/2, 2/2 | 2/2, 2/2 | 4.5 / 35.5 / 266.6s / 31,634 | 3.5 / 28.5 / 95.7s / 10,613 | 0 |
+| natural | 2/2, 2/2 | 1/2, 2/2 | 4.5 / 27.5 / 172.4s / 21,524 | 5.0 / 50.5 / 215.7s / 25,765 | 0 |
+| chain | 2/2, 2/2 | 2/2, 2/2 | 4.0 / 60.0 / 596.0s / 45,717 | 3.0 / 43.5 / 195.4s / 20,808 | 13（逐次 5/3/5/0） |
+
+- 隐藏验收三臂全部通过（每臂 4/4）；在这两个任务上，技能没有带来可测的功能正确性增益。
+- 唯一任务级失败是 natural 的 S12 第 2 次：它顺手修了 `backend/app/billing.py` 等 4 个后端文件，触发 `changed_files_max` 与 `changed_files_prefix`。S12 prompt 只描述仪表盘、未显式写“只改前端”，这是范围口径的已知歧义。
+- chain 后端平均耗时是 no-skill 的 2.2 倍、natural 的 3.5 倍，输出 token 是 no-skill 的 1.45 倍；前端 chain 约 2 倍于 no-skill。
+- chain 的技能调用不稳定：4 次运行中 2 次走完 route→build→test→review→done，1 次停在 test，1 次 0 次 Skill 调用但仍通过全部检查。单轮 headless 下，显式 prompt 不能保证技能被调用或链路连续执行。
+- chain 走完整链路时给出了更完整的验证证据和边界条件（如一租户多订阅的计费口径），但这些没有转化为隐藏测试差异；no-skill/natural 也自行补了测试与 CLI 验证。
+- n=2 只能看方向；任务难度仍未击穿强模型基线，不能据此判断技能在更复杂遗留系统或跨模块改动中无价值。
+
 ## 结论（最新一轮，2026-10-26）
 
 两宿主 × 两臂 × S1/S6 × 3 次 = 24 次调用，全部 checks 通过：
@@ -143,7 +212,8 @@ python3 evals/build-scenarios/compare.py \
 - Qoder CLI 通道带内容过滤，短中文指令可能被稳定拒绝（见 routing README）；A/B 的构建 prompt 未触发拒绝。
 - 用户级已安装 `devkit-skills@devkit-skills`，同时用 `--plugin-dir` 加载本仓库；同名技能可能重复出现。
 - `route.py` 是词法近似，不能判断语义；中文按字符 bigram 处理。
-- fixture 是合成项目，不自带可运行数据库；它测行为，不测真实编译/集成。
+- `legacy-java`/`legacy-py` 是合成项目，不自带可运行数据库；`saas-billing` 带可运行 SQLite，但数据仍是合成的，测行为不测真实编译/集成。
+- 链路臂的 prompt 明确点名 route/build/test/review/done；它测编排路径，不代表宿主会自然触发整条链路。
 - with 臂多一句显式调用指令，与 no 臂原始 prompt 不对称；只能测技能体效果，不能当自然触发率。
 - n=3 不足以证明稳定性；结论按方向使用，不按百分点使用。
 

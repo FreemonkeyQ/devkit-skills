@@ -40,7 +40,7 @@ class BuildEvaluationMaterialTests(unittest.TestCase):
 
     def test_scenarios_are_well_formed(self):
         self.assertEqual(self.data["version"], 1)
-        self.assertEqual(len(self.scenarios), 10)
+        self.assertEqual(len(self.scenarios), 12)
         ids = [scenario["id"] for scenario in self.scenarios]
         self.assertEqual(len(ids), len(set(ids)))
         for scenario in self.scenarios:
@@ -82,7 +82,12 @@ class BuildEvaluationMaterialTests(unittest.TestCase):
                     elif kind == "hidden_tests":
                         suite = BASE / "hidden" / check["suite"]
                         self.assertTrue(suite.is_dir(), suite)
-                        self.assertTrue(check["copy_to"])
+                        self.assertTrue(
+                            any(path.is_file() for path in suite.rglob("*")), suite
+                        )
+                        copy_to = Path(check["copy_to"])
+                        self.assertFalse(copy_to.is_absolute(), copy_to)
+                        self.assertNotIn("..", copy_to.parts, copy_to)
                         self.assertTrue(check["command"])
                         self.assertTrue(
                             all(isinstance(item, str) and item.strip()
@@ -127,6 +132,20 @@ class BuildEvaluationMaterialTests(unittest.TestCase):
             text=True,
         )
         self.assertEqual(conflict.returncode, 2)
+        chain_conflict = subprocess.run(
+            [sys.executable, str(runner), "--chain", "--no-plugin", "--dry-run"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(chain_conflict.returncode, 2)
+        skills_conflict = subprocess.run(
+            [sys.executable, str(runner), "--skills", "dv-build,dv-test", "--no-plugin", "--dry-run"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(skills_conflict.returncode, 2)
         dry = subprocess.run(
             [
                 sys.executable,

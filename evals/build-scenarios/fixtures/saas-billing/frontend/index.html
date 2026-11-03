@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>账单仪表盘</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>账单仪表盘</h1>
+      <p>多租户 SaaS 用量与账单</p>
+    </header>
+    <main>
+      <form id="filters">
+        <label>账期 <input id="period" name="period" value="2026-10" /></label>
+        <label>
+          状态
+          <select id="status" name="status">
+            <option value="ALL">全部</option>
+            <option value="OPEN">待支付</option>
+            <option value="PAID">已支付</option>
+            <option value="VOID">已作废</option>
+          </select>
+        </label>
+        <button type="submit">筛选</button>
+      </form>
+      <section id="summary" aria-live="polite">
+        <div><span>账单总额</span><strong id="total">—</strong></div>
+        <div><span>用量合计</span><strong id="usage">—</strong></div>
+      </section>
+      <section id="state" aria-live="polite"></section>
+      <table>
+        <thead>
+          <tr><th>租户</th><th>账期</th><th>状态</th><th>用量</th><th>金额</th><th>生成日期</th></tr>
+        </thead>
+        <tbody id="invoice-rows"></tbody>
+      </table>
+    </main>
+    <script type="module" src="./app-entry.js"></script>
+  </body>
+</html>

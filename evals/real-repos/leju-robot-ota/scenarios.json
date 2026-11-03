@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "source": "/Users/zhangxingshuai/Documents/Code/LejuSoftware/leju-robot-ota",
+  "base_rev": "0e102a847ece37585ca6e60af2ec4931724325f1",
+  "description": "Real-repository evaluation for leju-robot-ota. The source checkout is cloned to a temporary directory; hidden tests are copied in only after the agent finishes.",
+  "scenarios": [
+    {
+      "id": "OTA1-audit-redaction",
+      "permission": "acceptEdits",
+      "expected_skills": ["dv-build", "dv-test"],
+      "prompt": "审计 detail 的凭证脱敏不完整：`Authorization: Basic/Digest`、`Cookie` / `Set-Cookie`、URL 里的 userinfo、`token=` / `password=` 查询参数目前会原样落库。请沿用现有 `[redacted]` 占位补齐脱敏，覆盖嵌套 map/数组，并保证普通文本和普通 URL 不被误杀。只改 `internal/audit/`，不新增依赖。补充测试。",
+      "expectations": [
+        "Authorization 任意 scheme、Cookie/Set-Cookie、URL userinfo、token/password 查询参数都被脱敏为现有 [redacted]",
+        "脱敏覆盖嵌套 map 和数组，普通文本与普通 URL 保留",
+        "只改 internal/audit，不改 go.mod/go.sum，原有 audit 测试通过"
+      ],
+      "checks": [
+        {"type": "manifest_unchanged", "paths": ["go.mod", "go.sum"]},
+        {"type": "changed_files_max", "value": 4},
+        {"type": "changed_files_prefix", "prefixes": ["internal/audit/"]},
+        {"type": "hidden_files",
+         "files": [
+           {"source": "hidden/audit/zz_hidden_sanitize_test.go",
+            "target": "internal/audit/zz_hidden_sanitize_test.go"}
+         ],
+         "cwd": ".", "timeout": 180,
+         "command": ["go", "test", "./internal/audit", "-run", "TestHidden", "-count=1"]},
+        {"type": "command", "cwd": ".", "timeout": 180,
+         "command": ["go", "test", "./internal/audit", "-count=1"]}
+      ]
+    },
+    {
+      "id": "OTA2-audit-client-ip-filter",
+      "permission": "acceptEdits",
+      "expected_skills": ["dv-build", "dv-test"],
+      "prompt": "审计日志页要增加按客户端 IP 精确筛选：后端 `GET /plugins/platform/api/v1/audit` 接受 `client_ip` 查询参数并拼进 where；前端审计页增加 `clientIp` 筛选字段、`client_ip` 查询参数和本地化标签；中英两份使用手册的筛选说明同步更新。只改 `internal/audit/`、`web/src/pages/` 和两份手册，不新增依赖，不改数据库 schema。",
+      "expectations": [
+        "后端 parseFilter 读取 client_ip 并进入 where，空值不产生条件，能与 module/result/limit 组合",
+        "前端 Filters/defaults/queryString/筛选输入完整接入 clientIp，标签走本地化",
+        "中英手册的筛选列表都提到客户端 IP，check-manual 通过"
+      ],
+      "checks": [
+        {"type": "manifest_unchanged", "paths": ["go.mod", "go.sum", "web/package.json"]},
+        {"type": "changed_files_max", "value": 7},
+        {"type": "changed_files_prefix", "prefixes": ["internal/audit/", "web/src/", "docs/guides/manual/"]},
+        {"type": "hidden_files",
+         "files": [
+           {"source": "hidden/client-ip/zz_hidden_client_ip_test.go",
+            "target": "internal/audit/zz_hidden_client_ip_test.go"}
+         ],
+         "cwd": ".", "timeout": 180,
+         "command": ["go", "test", "./internal/audit", "-run", "TestHiddenClientIP", "-count=1"]},
+        {"type": "command", "cwd": ".", "timeout": 180,
+         "command": ["go", "test", "./internal/audit", "-count=1"]},
+        {"type": "command", "cwd": ".", "timeout": 120,
+         "command": ["python3", "tools/check-manual.py"]},
+        {"type": "command", "cwd": ".", "timeout": 120,
+         "command": ["python3", "{hidden}/client-ip/check_client_ip.py", "{repo}"]}
+      ]
+    }
+  ]
+}
