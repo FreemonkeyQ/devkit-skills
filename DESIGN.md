@@ -1,4 +1,4 @@
-# devkit-skills v0.3.3 设计
+# devkit-skills v0.4.0 设计
 
 ## 目标
 统一dv-命名、个人开源、覆盖研发全程。技能选择交给模型，重要决定与副作用授权留给用户。不是强制流水线，不为满足阶段数量而制造文档。当前19个技能，不新增dv-deploy。
@@ -17,6 +17,7 @@
 - 同版本Claude拒绝更新时备份后原子同步；install只指本机安装，不授权commit/push或发布。
 - 0.3.1修复apply模式未先刷新市场、导致看不到新发布版本的问题；check仍保持只读本地克隆。
 - 0.3.2修复默认Claude根被强制写入CLAUDE_CONFIG_DIR、导致CLI去读错误配置路径的问题。
+- 0.4.0增加运行上下文、确定性驱动、项目门禁、四轴评审、验收矩阵、/dv入口与消融评测。
 - 0.3.3强化dv-build：分级侦察、复用台账、新项目官方starter、约定冲突与SQL/性能门禁；不新增dv-init或dv-wiki，项目画像只在dv-context会话输出。
 
 ## 技能分工
@@ -66,6 +67,24 @@ build/test/reference覆盖Java Python Go JS/TS和Electron，但不能保证替�
 - 显式 `dv-build` 只增加成本：S9 耗时 +36%、输出 token +106%；S10 耗时 +54%、token +61%；没有功能增益。
 - natural 两轮共 12 次运行 0 次 Skill 调用；改 description 后词法 top1 已是 `dv-build`，宿主仍不调用。结论：该宿主/模型下 description 不足以保证自然触发，`dv-build` 不作为默认自动触发承诺，保留显式点名与 route 链路。
 - S9 基线全过，存在天花板；pilot 不支持“简单前后端任务默认启用有必要”，只支持高风险/复杂任务的显式护栏假设。
+
+## 2026-11-02 SaaS 计费 A/B
+- 新增 `saas-billing`：SQLite 多租户 schema（租户/套餐/订阅/用量/账单/明细）、标准库 CLI、vanilla JS 仪表盘；基线保留超额截断、税额浮点截断、重复执行撞唯一键、跨租户读取、列表无筛选/游标、前端无空态/账期筛选/未转义等遗留缺陷。
+- S11 后端要求金额按分四舍五入、账期幂等、租户隔离、筛选与游标分页、用量单次聚合；S12 前端要求账期+状态组合筛选、整数分汇总、四态与转义。隐藏测试同时重跑 fixture 自带测试。
+- 参考实现验证隐藏测试 7/7（后端）与 7/7（前端）可通过；基线分别失败 5/7 与 4/7，确认有可测的失败空间。
+- 三臂 × 2 任务 × 2 次（Claude Code 2.1.267 / deepseek[1m]）：隐藏验收三臂均 4/4；任务级 no-skill 4/4、natural 3/4、chain 4/4。唯一失败是 natural 在 S12 顺手改后端触发范围检查。
+- 成本：chain 后端 596.0s/45,717 token，no-skill 266.6s/31,634，natural 172.4s/21,524；前端 chain 195.4s/20,808，no-skill 95.7s/10,613。技能没有带来可测功能增益。
+- chain 调用不稳定：4 次运行 Skill 调用为 5/3/5/0，只有 2 次走完 route→build→test→review→done；单轮 headless 无法保证技能被调用或链路连续。
+- 结论：复杂任务仍未击穿强模型基线；`--chain` 可以测编排路径和证据质量，但不能当作“技能必然提升正确率”的证据。n=2、单模型，结论只作方向。
+
+## 2026-11-03 工作流基础设施
+- 新增运行上下文：`.devkit/runs/<id>/` 下 `plan.json`、`context.json`、`acceptance.json`、`evidence/`，分别有 JSON Schema；目标模式先落盘再执行。
+- 新增 `scripts/devkit_run.py`：init 生成计划，按风险选择 fast/standard/high 路径；next 推进；record 记录 pass/blocked 与验收；drive 用宿主命令确定性逐技能执行。
+- 新增 `scripts/devkit_context.py`：从真实 manifest、测试入口和仓库工具生成 `.devkit/project.json`，记录 gates、rulesFiles、invariants；不安装工具、不执行命令。
+- 新增 `scripts/devkit_gates.py`：执行真实门禁并写 `gate_results` 与证据；`dv-done` 在必需门禁缺失或验收 pending/fail 时 fail closed。
+- `dv-review` 改为四轴，增加验收闭合；`dv-done` 改为门禁+验收矩阵闸门；`dv-context` 负责生成门禁适配器。
+- 新增显式入口 `commands/dv.md` 与 `scripts/install_entry.py`；自然触发仍不保证，改用 `/dv` 或显式 route。
+- 评测新增 `--skills` 消融臂，可测 build-only、build+test 等，不再只测整个 chain。
 
 ## 支持与验证口径
 Claude/Codex/Qoder调用元数据分别验证。openai.yaml只说明Codex策略，user-invocable不是禁止隐式调用，Qoder未知能力不作结论。

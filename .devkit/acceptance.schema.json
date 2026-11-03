@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "devkit acceptance matrix v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "run_id", "items"],
+  "properties": {
+    "version": {"const": 1},
+    "run_id": {"type": "string"},
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["requirement", "status", "evidence"],
+        "properties": {
+          "requirement": {"type": "string", "minLength": 1},
+          "status": {"enum": ["pending", "pass", "fail", "unknown"]},
+          "evidence": {"type": "string"},
+          "note": {"type": "string"}
+        }
+      }
+    },
+    "updatedAt": {"type": "string"}
+  }
+}

@@ -19,7 +19,7 @@
 | dv-plan | 方案定稿与任务拆解 | docs | 依任务范围 | dv-build, dv-test |
 | dv-push | 提交后推送与CI跟踪 | docs | commit, push | dv-commit, dv-done |
 | dv-research | 一手证据调研 | docs | 依任务范围 | dv-plan, dv-arch |
-| dv-review | 三轴评审含未提交改动 | docs | 依任务范围 | dv-build, dv-done |
+| dv-review | 四轴评审含未提交改动 | docs | 依任务范围 | dv-build, dv-done |
 | dv-route | 按目标选择最短研发路径 | 只读说明 | 依任务范围 | dv-help |
 | dv-test | 业务用例、测试执行与修复复测 | docs, tests | 依任务范围 | dv-build, dv-review, dv-audit |
 | dv-upgrade | 跨宿主升级本机 devkit | install | install | dv-help |

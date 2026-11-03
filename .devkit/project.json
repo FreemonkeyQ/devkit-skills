@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "root": ".",
+  "language": "python",
+  "rulesFiles": [
+    "AGENTS.md"
+  ],
+  "scopeHints": [
+    "skills",
+    "tests",
+    "docs"
+  ],
+  "invariants": [],
+  "commands": {
+    "test": "python3 -m unittest discover -s tests -v",
+    "lint": "python3 scripts/lint.py"
+  },
+  "gates": [
+    {
+      "id": "unit",
+      "kind": "test",
+      "command": "python3 -m unittest discover -s tests -v",
+      "required": true,
+      "timeout": 600
+    },
+    {
+      "id": "lint",
+      "kind": "lint",
+      "command": "python3 scripts/lint.py",
+      "required": true,
+      "timeout": 600
+    },
+    {
+      "id": "help",
+      "kind": "custom",
+      "command": "python3 scripts/dv-help-gen.py --check",
+      "required": true,
+      "timeout": 600
+    },
+    {
+      "id": "cost",
+      "kind": "custom",
+      "command": "python3 scripts/cost.py",
+      "required": false,
+      "timeout": 600
+    },
+    {
+      "id": "docs",
+      "kind": "docs",
+      "command": "python3 scripts/check-docs.py",
+      "required": true,
+      "timeout": 600
+    }
+  ]
+}

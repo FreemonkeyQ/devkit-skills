@@ -53,6 +53,34 @@
 
 未声明终点时默认到 `done`，并在计划中写明；需要 commit、push、部署必须由用户补充或在计划确认时明确加入。
 
+## 运行上下文与驱动协议
+
+目标模式先落盘，再执行；目录固定为 `.devkit/runs/<run-id>/`：
+
+- `plan.json`：目标、风险、终点、范围、授权、步骤、门禁、门禁结果。
+- `context.json`：已侦察文件、复用台账、决策、证据。
+- `acceptance.json`：原始需求逐条对应证据和状态（pending/pass/fail/unknown）。
+- `evidence/`：门禁和验证日志。
+
+标准动作：
+
+```bash
+python3 scripts/devkit_run.py --root . init --goal "<目标>"
+python3 scripts/devkit_run.py --root . --run <id> next
+python3 scripts/devkit_gates.py --root . --run <id> run
+python3 scripts/devkit_run.py --root . --run <id> record --skill dv-test --status pass --evidence "<命令/结果>"
+python3 scripts/devkit_run.py --root . --run <id> note --skill dv-build --kind reuse --detail "<复用台账/决策>"
+```
+
+`next` 只返回第一个 pending 步骤；`record` 在步骤门禁未通过时直接 blocked。`dv-done` 只有在必需门禁全部 pass 且 `acceptance.json` 没有 pending/fail 时才能通过。没有脚本时手工维护同样字段，不能只靠聊天上下文。
+
+## 风险与快路径
+
+- **trivial**：单文件文案/配置/重命名且无行为变化；`build → done`，不跑完整 review/test 链。
+- **standard**：默认；`build → test → review → done`。
+- **high**：安全、权限、迁移、schema、并发、计费、发布等；同 standard，但必须保留完整证据和验收矩阵。
+- 范围超过 4 个文件、出现不可逆或共享副作用时按停车闸门处理，不靠“技能已加载”自动扩权。
+
 ## 终点解释
 
 | 用户说法 | 终点 | 不包含 |

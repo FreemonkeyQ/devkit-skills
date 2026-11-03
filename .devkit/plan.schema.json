@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "devkit run plan v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "run_id", "goal", "risk", "endpoint", "scope", "authorization", "steps", "state"],
+  "properties": {
+    "version": {"const": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "goal": {"type": "string", "minLength": 1},
+    "risk": {"enum": ["trivial", "standard", "high"]},
+    "endpoint": {"enum": ["done", "commit", "push"]},
+    "scope": {"type": "array", "items": {"type": "string"}},
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["businessCode", "tests", "docs", "commit", "push", "deploy"],
+      "properties": {
+        "businessCode": {"type": "boolean"},
+        "tests": {"type": "boolean"},
+        "docs": {"type": "boolean"},
+        "commit": {"type": "boolean"},
+        "push": {"type": "boolean"},
+        "deploy": {"type": "boolean"}
+      }
+    },
+    "gates": {"type": "array", "items": {"type": "string"}},
+    "gate_results": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status", "exit_code"],
+        "properties": {
+          "status": {"enum": ["pass", "fail", "skipped"]},
+          "exit_code": {"type": ["integer", "null"]},
+          "log": {"type": "string"},
+          "at": {"type": "string"}
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["skill", "status"],
+        "properties": {
+          "skill": {"type": "string", "pattern": "^dv-[a-z0-9-]+$"},
+          "status": {"enum": ["pending", "pass", "fail", "blocked", "skipped"]},
+          "gates": {"type": "array", "items": {"type": "string"}},
+          "evidence": {"type": "array", "items": {"type": "string"}},
+          "note": {"type": "string"}
+        }
+      }
+    },
+    "state": {"enum": ["running", "blocked", "complete"]},
+    "createdAt": {"type": "string"},
+    "updatedAt": {"type": "string"}
+  }
+}

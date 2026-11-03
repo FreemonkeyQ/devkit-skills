@@ -24,6 +24,8 @@ metadata:
 - `--cost`：只报告估算口径或宿主提供的实际统计，不把字符除3称为精确常驻。
 - `--trouble`：从 guide.md 排查路径、调用能力、配置与旧插件冲突；不擅自安装或修改全局设置。
 - 自然触发不稳定：实现类任务需要 `dv-build` 约束时，建议显式点名或用 route 链路，不要把“没自动调用”判断成技能不存在。
+- 显式入口：优先用 `/dv <目标>`（命令模板 `commands/dv.md`）；需要安装到宿主时运行 `python3 scripts/install_entry.py --host claude|qoder --apply`。
+- 连续执行：目标模式用 `scripts/devkit_run.py` 生成 plan/context/acceptance，`next` 推进，`record` 留证；`dv-done` 前用 `devkit_gates.py` 跑真实门禁。
 
 ## 技能交接
 收尾给三行：已完成；建议下一步（有 metadata.next 时选 1 个默认，可附 1 个备选）；需用户决定的事。用户确认即直接调用下一步，不重复完整侦察；目标式委托与停车闸门见 dv-route 的链路模式。

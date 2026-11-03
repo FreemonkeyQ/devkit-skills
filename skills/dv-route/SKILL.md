@@ -29,6 +29,13 @@ metadata:
 3. 停车闸门：范围变化、未定决策、不可逆或共享副作用、Git 动作超出终点、失败或阻塞时停。终点写 push 才 commit/push，不隐含 force/merge/PR/部署。
 4. 两种模式都不放宽技能原有授权；`next` 只是候选图。
 
+## 运行上下文与驱动
+目标模式优先落盘，不靠模型记忆连续执行：
+1. `scripts/devkit_run.py init` 生成 `plan.json`、`context.json`、`acceptance.json`；低风险任务走 `build → done` 快路径，标准/高风险走 `build → test → review → done`。
+2. `devkit_run.py next` 给出当前技能和 prompt；每个技能结束用 `record` 记录 pass/blocked、证据和验收项。
+3. `devkit_gates.py run/check` 执行项目真实门禁；`dv-done` 只能在必需门禁和验收项闭合后通过。
+4. 没有脚本时按 `references/chain.md` 的等价协议手工执行，不把“计划已输出”当成已执行。
+
 ## 路由
 模糊需求→dv-grill；已确认方案→dv-plan；明确实现→dv-build；报错→dv-debug；技术调查→dv-research；页面/动效→dv-design；结构/迁移方案→dv-arch；用例/执行测试→dv-test；测试有效性/体检→dv-audit；真实UI验收→dv-browser；审改动→dv-review；完成验证汇报→dv-done；规范提交→dv-commit；推送/commit push→dv-push；仓库接入→dv-context；维护技能→dv-author；用法→dv-help。
 

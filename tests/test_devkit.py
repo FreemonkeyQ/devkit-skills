@@ -259,7 +259,7 @@ class SkillContractTests(unittest.TestCase):
             for word in ('并行执行','串行','不伪称已分发'):
                 self.assertIn(word,body)
         self.assertIn('只读',records['dv-review'][1])
-        for word in ('3 个','未确认停止前'):
+        for word in ('4 个','未确认停止前'):
             self.assertIn(word,records['dv-review'][1])
         self.assertIn('独立临时副本',records['dv-audit'][1])
         self.assertIn('一手证据',records['dv-research'][1])
@@ -276,10 +276,16 @@ class SkillContractTests(unittest.TestCase):
         for name,(_,body) in records.items():
             self.assertIn('## 技能交接',body,name)
         route=records['dv-route'][1]
-        for word in ('逐步模式','目标模式','停车闸门','references/chain.md'):
+        for word in ('逐步模式','目标模式','停车闸门','references/chain.md','plan.json','devkit_run.py','快路径'):
             self.assertIn(word,route)
+        for word in ('acceptance.json','devkit_gates.py'):
+            self.assertIn(word,records['dv-done'][1])
+        for word in ('四轴','acceptance.json'):
+            self.assertIn(word,records['dv-review'][1])
+        for word in ('project.json','devkit_context.py'):
+            self.assertIn(word,records['dv-context'][1])
         chain=(ROOT/'skills/dv-route/references/chain.md').read_text(encoding='utf-8')
-        for word in ('三行交接','终点解释','停车闸门','force','merge','部署'):
+        for word in ('三行交接','终点解释','停车闸门','force','merge','部署','plan.json','acceptance.json','devkit_gates.py','快路径'):
             self.assertIn(word,chain)
     def test_evaluation_fixtures(self):
         cases=json.loads((ROOT/'evals/scenarios.json').read_text())['cases']

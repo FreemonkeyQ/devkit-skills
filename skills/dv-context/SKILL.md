@@ -1,6 +1,6 @@
 ---
 name: dv-context
-description: '把 devkit 接入一个仓库：摸清技术栈/命令/模块，生成配置、补 AGENTS.md 技能段、建状态文件，并核对既有目录约定。用于新仓首次接入、项目画像、状态与配置不一致、SKILL
+description: '把 devkit 接入一个仓库：摸清技术栈/命令/模块，生成配置与 .devkit/project.json 门禁适配器、补 AGENTS.md 技能段、建状态文件，并核对既有目录约定。用于新仓首次接入、项目画像、状态与配置不一致、SKILL
   没按预期工作。Triggers: 接入, 初始化devkit, 配置devkit, 项目画像, 摸清项目, setup, onboard, 状态不一致.'
 user-invocable: true
 metadata:
@@ -22,9 +22,10 @@ metadata:
 2. 沿用既有产物目录与编号；没有则默认.devkit。配置始终在项目.devkit/config.json，路径值相对项目根；commands是明确命令，不凭安装依赖推定能运行。
 3. 普通写文档按用户接入授权执行；新增重要流程规则展示摘要。AGENTS只维护标记包围的devkit段，不覆盖其他正文/目录级指令；该段写产物目录、命名规则与校验入口（≤15行），细节指向ARTIFACTS.md。
 4. 参考共享scripts/config.py与config.schema.json输出配置，记录可用/不可用检查。新增`docs.profile`（off/light/strict）与`paths.changes`/`paths.index`；缺失时按light处理。没有自动提交开关：commit/push由当次意图授权，不由静态配置提升权限。
-5. 状态可选；新建时idle，已有状态不能重置丢任务。用户指令/Git/实测优先于游标，冲突报告修正建议而非盲信JSON。
-6. 可行时运行`scripts/check-docs.py`与`scripts/gen-docs-index.py`生成索引，报告实际输出；工具不可用或profile=off时明确说未校验。
-7. 输出实际变动、路径与命令依据，不安装全局技能、不挂hook、不生成 wiki、不修改用户设置，除非另行明确要求。
+5. 生成或刷新 `.devkit/project.json`：运行 `python3 scripts/devkit_context.py --root . --write`，记录真实测试/lint/build/docs/i18n/manual 门禁、rulesFiles、invariants。已有文件默认不覆盖；用户确认刷新才加 `--force`。门禁命令只填真实入口，不安装工具、不执行命令。
+6. 状态可选；新建时idle，已有状态不能重置丢任务。用户指令/Git/实测优先于游标，冲突报告修正建议而非盲信JSON。
+7. 可行时运行`scripts/check-docs.py`与`scripts/gen-docs-index.py`生成索引，报告实际输出；工具不可用或profile=off时明确说未校验。
+8. 输出实际变动、路径与命令依据，不安装全局技能、不挂hook、不生成 wiki、不修改用户设置，除非另行明确要求。
 
 ## 技能交接
 收尾给三行：已完成；建议下一步（有 metadata.next 时选 1 个默认，可附 1 个备选）；需用户决定的事。用户确认即直接调用下一步，不重复完整侦察；目标式委托与停车闸门见 dv-route 的链路模式。

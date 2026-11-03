@@ -20,6 +20,11 @@
 | 审计 | docs/audits | audit |
 | 原型 | docs/design | design |
 | 会话交接 | .devkit/handoff | 当前执行技能（按需） |
+| 项目门禁适配器 | .devkit/project.json | context（detect --write） |
+| 运行计划 | .devkit/runs/{id}/plan.json | route/run init |
+| 运行上下文 | .devkit/runs/{id}/context.json | 各执行技能 |
+| 验收矩阵 | .devkit/runs/{id}/acceptance.json | build/test/review/done |
+| 门禁证据 | .devkit/runs/{id}/evidence/ | devkit_gates |
 | 索引 | docs/INDEX.md | 脚本生成，勿手改 |
 
 所有路径可通过 config.paths 覆盖。读取参考文件相对技能目录，产物相对项目根；不能把技能仓库根当目标项目根。
@@ -94,6 +99,16 @@ state.schema.json 规定 version/stage/next 等字段。next 始终是 dv-* 名�
 用户当前指令、Git/实测证据、仓库规则优先，JSON 只是游标。旧状态不驱动提交、push 或部署。
 verified 表示验证完成；awaiting-commit 保留待处理内容；committed/pushed 各有 SHA 证据；completed 是本次任务结束，不暗示上线。
 不同 worktree 使用自己的游标；多会话写同一游标有冲突，写前对照任务/branch/head，冲突不覆盖其他任务。当前工具不提供多会话调度器。
+
+## 运行上下文与门禁
+
+`plan.json`、`context.json`、`acceptance.json` 分别由 `.devkit/plan.schema.json`、`context.schema.json`、`acceptance.schema.json` 校验。`.devkit/project.json` 由 `scripts/devkit_context.py` 从真实 manifest、测试入口和仓库工具生成，字段见 `project.schema.json`。
+
+- `devkit_run.py init` 只写计划，不执行技能；`next` 返回第一个 pending 步骤。
+- `devkit_gates.py run` 执行项目真实命令并写 `gate_results` 和日志；`check` 只读判定必需门禁是否全部 pass。
+- `record --skill dv-done --status pass` 在必需门禁缺失或验收项 pending/fail 时强制 blocked。
+- `trivial` 快路径的 done 不强制完整门禁；standard/high 必须保留门禁与验收证据。
+- `.devkit/runs/` 是运行产物，默认 gitignore；需要版本化证据时由项目单独决定。
 
 ## 记录策略
 

@@ -9,5 +9,6 @@ node_modules/
 .DS_Store
 .devkit/config.json
 .devkit/state.json
+.devkit/runs/
 # Confirmed specs/issues/ADR/handoff may be versioned by project policy.
 # Do not globally discard them as ephemeral runtime state.

@@ -36,10 +36,15 @@ def check(root=ROOT):
                 errors.append(f'{name}: missing {word}')
         if '## 技能交接' not in body:
             errors.append(f'{name}: missing ## 技能交接')
-        if name == 'dv-route':
-            for word in ('逐步模式', '目标模式', '停车闸门', 'references/chain.md'):
-                if word not in body:
-                    errors.append(f'{name}: missing chain contract word {word}')
+        required_words = {
+            'dv-route': ('逐步模式', '目标模式', '停车闸门', 'references/chain.md', 'plan.json', 'devkit_run.py', '快路径'),
+            'dv-done': ('acceptance.json', 'devkit_gates.py'),
+            'dv-review': ('四轴', 'acceptance.json'),
+            'dv-context': ('project.json', 'devkit_context.py'),
+        }
+        for word in required_words.get(name, ()):
+            if word not in body:
+                errors.append(f'{name}: missing contract word {word}')
         meta = fm.get('metadata')
         if not isinstance(meta, dict):
             errors.append(f'{name}: metadata must be object')

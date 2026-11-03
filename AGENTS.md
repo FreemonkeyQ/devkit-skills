@@ -15,6 +15,7 @@
 - CI跟踪优先已有发布链，SHA/分支关联；不隐式批准/重试/生产部署。
 - state是恢复提示，不覆盖当前指令/Git/证据；不安装用户配置或链接，除非另行要求。
 - 实施验证使用 `python3 -m unittest discover -s tests -v`、lint和help --check；开发依赖见requirements-dev.txt。
+- 工作流基础设施验证：`python3 -m unittest tests.test_workflow -v`、`python3 scripts/devkit_context.py --root . --json`；运行级门禁用 `devkit_gates.py --root . --run <id> run/check`。`.devkit/project.json` 由适配器生成，不手写伪命令。
 - 阅读技能不依赖Python；脚本元数据不能代替宿主权限沙箱。跨宿主未验证明确标注。
 
 产物约定见ARTIFACTS.md；方案见DESIGN.md；评估口径见docs/evaluation.md。

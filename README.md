@@ -5,7 +5,7 @@
 
 面向个人与开源协作的研发技能库，统一 `dv-` 命名，与公司无关。**19 个技能，直接说任务即可；调用技能不等于授权提交、推送或部署。**
 
-状态：**v0.3.3 原型**。流程契约与离线测试可验证；宿主实际调用、真实项目交付与跨平台部署不宣称已全面验证。
+状态：**v0.4.0 原型**。流程契约与离线测试可验证；宿主实际调用、真实项目交付与跨平台部署不宣称已全面验证。
 
 ## 环境要求
 
@@ -94,6 +94,7 @@ claude plugin details devkit-skills      # 方式一：Skills (19) 且列出 dv-
 | 你说 | 推荐路径 | 边界 |
 |---|---|---|
 | 按 dv Skills 执行 / 一直做到 done | route 逐步或目标模式 → … → done | 先确认链路与闸门；不自动 commit/push |
+| `/dv <目标>` | 显式入口 → `devkit_run.py` 计划 → 技能链 → 门禁/验收 | 命令模板在 `commands/dv.md`；安装见 `scripts/install_entry.py` |
 | 一直做到 done push | route 目标模式 → … → done → commit → push | 仅终点声明才推送；不含 force/merge/PR/部署 |
 | 想加导出，但字段没想清 | grill → plan（必要时） | 只澄清不自动开工 |
 | 按已确认方案实现 | build → review → done | 不自动 commit/push |
@@ -121,6 +122,35 @@ claude plugin details devkit-skills      # 方式一：Skills (19) 且列出 dv-
 完整生成表见 [dv-help](skills/dv-help/references/_generated.md)。`next` 是候选图，不是强制执行序列；逐步模式确认后才推进，目标模式只在声明终点内连续执行。
 
 没有必要为了一个小改动制造 spec、issue、ADR。现有仓库规范优先；自然语言可以明确只分析、记录、执行或限制范围。
+
+## 运行上下文、门禁与入口
+
+目标模式不再只靠聊天记忆。每个运行落盘到 `.devkit/runs/<id>/`：
+
+- `plan.json`：风险、终点、范围、授权、步骤、门禁与结果；
+- `context.json`：侦察、复用、决策和证据；
+- `acceptance.json`：原始需求逐条对应证据；
+- `evidence/`：门禁日志。
+
+```bash
+python3 scripts/devkit_context.py --root . --write   # 生成 .devkit/project.json 门禁适配器
+python3 scripts/devkit_run.py --root . init --goal "<目标>"
+python3 scripts/devkit_run.py --root . --run <id> next
+python3 scripts/devkit_gates.py --root . --run <id> run
+python3 scripts/devkit_gates.py --root . --run <id> check
+python3 scripts/devkit_run.py --root . --run <id> record --skill dv-test --status pass --evidence "<证据>"
+```
+
+`devkit_run.py init` 默认 `standard`：`build → test → review → done`；文案/配置类 `trivial` 走 `build → done` 快路径；安全、权限、迁移、schema、并发、计费等自动判为 `high`。只有 `--endpoint commit|push` 才把 Git 步骤纳入计划和授权。
+
+显式入口 `/dv <目标>` 的模板在 `commands/dv.md`。安装到宿主（会备份已有文件，仅写用户命令目录）：
+
+```bash
+python3 scripts/install_entry.py --host claude --apply
+python3 scripts/install_entry.py --host qoder --apply
+```
+
+`dv-done` 只有在步骤门禁全部 pass 且 `acceptance.json` 没有 pending/fail 时才能通过；门禁失败或验收未闭合只能报 blocked/部分完成。
 
 ## 更新与卸载
 
